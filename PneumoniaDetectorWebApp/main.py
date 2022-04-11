@@ -41,7 +41,5 @@ def get_output():
     return render_template("Home.html")
 
 
-
-
 if __name__ == "__main__":
     app.run(debug=True)
