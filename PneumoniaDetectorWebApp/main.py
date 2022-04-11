@@ -11,7 +11,7 @@ modelCT = load_model('PNmodel.h5')
 Vgg19 = load_model('PNmodel.h5')
 RFC = load_model('PNmodel.h5')
 
-dic = {0: 'Pneumonia', 1: 'Normal'}
+result = {0: 'Pneumonia', 1: 'Normal'}
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -19,24 +19,24 @@ def home():
     return render_template('Home.html')
 
 
-@app.route("/submit", methods=['GET', 'POST'])
-def get_output():
+@app.route("/submit", methods=['POST'])
+def performPrediction():
     if request.method == 'POST':
-        img = request.files['my_image']
-        if img.filename != "":
-            img_path = "static/" + img.filename
-            img.save(img_path)
+        xray_img = request.files['my_image']
+        if xray_img.filename != "":
+            xray_img_path = "static/" + xray_img.filename
+            xray_img.save(xray_img_path)
 
-            i = image.load_img(img_path, target_size=(150, 150))
-            i = image.img_to_array(i) / 255
-            i = i.reshape(-1, 150, 150, 1)
-            i = preprocess_input(i, mode='tf')
+            x = image.load_img(xray_img_path, target_size=(150, 150))
+            x = image.img_to_array(x) / 255
+            x = x.reshape(-1, 150, 150, 1)
+            x = preprocess_input(x, mode='tf')
 
-            preds = (model.predict(i) > 0.1).astype("int32")
+            prediction = (model.predict(x) > 0.1).astype("int32")
 
-            p = dic[preds[0, 0]]
+            predictionresult = result[prediction[0, 0]]
 
-            return render_template("Home.html", prediction=p, img_path=img_path)
+            return render_template("Home.html", xray_prediction=predictionresult, xray_img_path=xray_img_path)
 
     return render_template("Home.html")
 
