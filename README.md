@@ -1,6 +1,7 @@
 # Pneumonia Detector
 Python Project 2022
 
+Video demo: https://youtu.be/vZO1iLW8xDw
 
 Our project was created for the python programming course given at UMKC. This project has been submitted to the Spring 2022 UDICA Hackathon.
 
