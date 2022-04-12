@@ -28,7 +28,7 @@ def performPrediction():
             xray_img.save(xray_img_path)
 
             x = image.load_img(xray_img_path, target_size=(150, 150))
-            x = np.array(x) / 255
+            x = image.img_to_array(x) / 255
             x = x.reshape(-1, 150, 150, 1)
 
             prediction = (model.predict(x) > 0.5).astype("int32")
