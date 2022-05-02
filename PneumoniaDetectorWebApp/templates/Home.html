@@ -28,9 +28,16 @@
 </nav>
 <br><br>
 <div class="container-fluid" style="background-color: #b0b0b0;">
-    <div class="row"></div>
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-9 text-center">
+
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-1">
         </div>
         <div class="col-md-3">
             <div class="card" style="width: 22rem;">
@@ -42,6 +49,27 @@
                         <br>
                         <div>
                             <input type="file" name="my_image" id="img">
+                        </div>
+                        <br>
+                        <div>
+                            <h5 class="form-check-label" for="confusedModel">
+                                Select Prediction Model:
+                            </h5>
+                            <br>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="options" value="CM" id="confusedModel"
+                                       checked>
+                                The Confused Model</input>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="options" value="RM" id="resNetModel">
+                                ResNet50</input>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="options" value="VM" id="vgg16Model">
+                                Vgg16</input>
+                            </div>
+                            <br>
                         </div>
                         <br>
                         <div class="text-center">
