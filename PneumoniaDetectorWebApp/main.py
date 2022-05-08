@@ -36,7 +36,8 @@ def performPrediction():
                 x = image.img_to_array(x) / 255
                 x = x.reshape(-1, 150, 150, 1)
 
-                prediction = (model.predict(x) > 0.5).astype("int32")
+                print(model.predict(x))
+                prediction = (model.predict(x) > 0.25).astype("int32")
                 predictionresult = result[prediction[0, 0]]
                 return render_template("Home.html", xray_prediction=predictionresult, xray_img_path=xray_img_path)
 
