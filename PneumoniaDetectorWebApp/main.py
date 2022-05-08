@@ -46,7 +46,7 @@ def performPrediction():
                 x = image.img_to_array(x) / 255
                 x = np.expand_dims(x, axis=0)
 
-                prediction = (modelResNet50.predict(x) < 0.445).astype("int32")
+                prediction = (modelResNet50.predict(x) > 0.313).astype("int32")
                 predictionresult = result[prediction[0, 0]]
                 return render_template("Home.html", xray_prediction=predictionresult, xray_img_path=xray_img_path)
 
