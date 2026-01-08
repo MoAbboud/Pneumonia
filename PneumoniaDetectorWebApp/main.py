@@ -247,9 +247,16 @@ def get_all_predictions(img_path, selected_model_only=False, model_name='Custom 
                 threshold = THRESHOLDS['RM'] if model_name == 'ResNet50' else THRESHOLDS['VM']
             
             raw_predictions[model_name] = pred
+            predicted_class = result[(pred > threshold).astype("int32")]
+            # Calculate confidence as percentage - if Normal (pred > threshold), use pred; if Pneumonia, use (1 - pred)
+            if predicted_class == 'Normal':
+                confidence = float(pred * 100)
+            else:
+                confidence = float((1 - pred) * 100)
+            
             predictions[model_name] = {
-                'confidence': float(pred * 100),
-                'result': result[(pred > threshold).astype("int32")],
+                'confidence': confidence,
+                'result': predicted_class,
                 'threshold': threshold,
                 'raw_score': float(pred)
             }
@@ -260,9 +267,11 @@ def get_all_predictions(img_path, selected_model_only=False, model_name='Custom 
             x_reshaped = x_array.reshape(-1, 150, 150, 1)
             cm_pred = get_model('Custom CNN').predict(x_reshaped, verbose=0)[0, 0]
             raw_predictions['Custom CNN'] = cm_pred
+            cm_result = result[(cm_pred > THRESHOLDS['CM']).astype("int32")]
+            cm_confidence = float(cm_pred * 100) if cm_result == 'Normal' else float((1 - cm_pred) * 100)
             predictions['Custom CNN'] = {
-                'confidence': float(cm_pred * 100),
-                'result': result[(cm_pred > THRESHOLDS['CM']).astype("int32")],
+                'confidence': cm_confidence,
+                'result': cm_result,
                 'threshold': THRESHOLDS['CM'],
                 'raw_score': float(cm_pred)
             }
@@ -273,9 +282,11 @@ def get_all_predictions(img_path, selected_model_only=False, model_name='Custom 
             x_expanded = np.expand_dims(x_array, axis=0)
             rn_pred = get_model('ResNet50').predict(x_expanded, verbose=0)[0, 0]
             raw_predictions['ResNet50'] = rn_pred
+            rn_result = result[(rn_pred > THRESHOLDS['RM']).astype("int32")]
+            rn_confidence = float(rn_pred * 100) if rn_result == 'Normal' else float((1 - rn_pred) * 100)
             predictions['ResNet50'] = {
-                'confidence': float(rn_pred * 100),
-                'result': result[(rn_pred > THRESHOLDS['RM']).astype("int32")],
+                'confidence': rn_confidence,
+                'result': rn_result,
                 'threshold': THRESHOLDS['RM'],
                 'raw_score': float(rn_pred)
             }
@@ -285,9 +296,11 @@ def get_all_predictions(img_path, selected_model_only=False, model_name='Custom 
             logger.info("Making VGG16 prediction...")
             vgg_pred = get_model('VGG16').predict(x_expanded, verbose=0)[0, 0]
             raw_predictions['VGG16'] = vgg_pred
+            vgg_result = result[(vgg_pred > THRESHOLDS['VM']).astype("int32")]
+            vgg_confidence = float(vgg_pred * 100) if vgg_result == 'Normal' else float((1 - vgg_pred) * 100)
             predictions['VGG16'] = {
-                'confidence': float(vgg_pred * 100),
-                'result': result[(vgg_pred > THRESHOLDS['VM']).astype("int32")],
+                'confidence': vgg_confidence,
+                'result': vgg_result,
                 'threshold': THRESHOLDS['VM'],
                 'raw_score': float(vgg_pred)
             }
@@ -297,9 +310,11 @@ def get_all_predictions(img_path, selected_model_only=False, model_name='Custom 
             ensemble_score = sum(raw_predictions[model] * ENSEMBLE_WEIGHTS[model] 
                                 for model in raw_predictions.keys())
             ensemble_threshold = 0.3  # Average threshold
+            ensemble_result = result[(ensemble_score > ensemble_threshold).astype("int32")]
+            ensemble_confidence = float(ensemble_score * 100) if ensemble_result == 'Normal' else float((1 - ensemble_score) * 100)
             predictions['Ensemble'] = {
-                'confidence': float(ensemble_score * 100),
-                'result': result[(ensemble_score > ensemble_threshold).astype("int32")],
+                'confidence': ensemble_confidence,
+                'result': ensemble_result,
                 'threshold': ensemble_threshold,
                 'raw_score': float(ensemble_score),
                 'description': 'Weighted average of all models'
