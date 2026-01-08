@@ -1,10 +1,12 @@
 import numpy as np
 import os
 import logging
+import gc
 from flask import Flask, render_template, request, flash
 
 # TensorFlow memory optimization
 import tensorflow as tf
+from keras import backend as K
 tf.config.threading.set_inter_op_parallelism_threads(2)
 tf.config.threading.set_intra_op_parallelism_threads(2)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -33,9 +35,22 @@ MODEL_PATHS = {
 # Model cache - load on demand to save memory
 _model_cache = {}
 
+def clear_model_cache():
+    """Aggressively clear all models from memory"""
+    global _model_cache
+    logger.info("Clearing model cache...")
+    for model_name in list(_model_cache.keys()):
+        del _model_cache[model_name]
+    _model_cache = {}
+    K.clear_session()
+    gc.collect()
+    logger.info("Model cache cleared!")
+
 def get_model(model_name):
     """Load model on demand (lazy loading to save memory)"""
     if model_name not in _model_cache:
+        # Clear old models before loading new one
+        clear_model_cache()
         logger.info(f"Loading {model_name} model...")
         _model_cache[model_name] = load_model(MODEL_PATHS[model_name])
         logger.info(f"{model_name} model loaded!")
@@ -119,6 +134,15 @@ def get_all_predictions(img_path, selected_model_only=False, model_name='Custom 
             logger.info(f"VGG16 result: {predictions['VGG16']}")
         
         logger.info("Predictions completed successfully")
+        
+        # Aggressive memory cleanup after prediction
+        del x, x_array
+        if 'x_reshaped' in locals():
+            del x_reshaped
+        if 'x_expanded' in locals():
+            del x_expanded
+        gc.collect()
+        
         return predictions
         
     except Exception as e:
