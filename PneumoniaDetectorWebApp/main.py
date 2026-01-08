@@ -1,7 +1,6 @@
 import numpy as np
 import os
 from flask import Flask, render_template, request, flash
-from keras.applications.imagenet_utils import preprocess_input
 from keras.models import load_model
 from keras.preprocessing import image
 
