@@ -1,13 +1,132 @@
+/* Modern Pneumonia Detector Styles */
 
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/* Card Animations */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Button Hover Effect */
+.btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+/* Custom File Input Styling */
+.custom-file-label::after {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.custom-file-input:focus ~ .custom-file-label {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Alert Animations */
+.alert {
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Image Border for legacy support */
 #image_border {
     width: 600px;
     height: 500px;
 }
 
-#display_image{
+#display_image {
     width: 375px;
     height: 211px;
-    border: 1px solid black;
+    border: 1px solid #ddd;
     background-position: center;
     background-size: cover;
+    border-radius: 10px;
+}
+
+/* Responsive Image */
+.file-upload {
+    transition: transform 0.3s ease;
+}
+
+.file-upload:hover {
+    transform: scale(1.02);
+}
+
+/* Radio Button Custom Styling */
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+/* Navbar Glass Effect */
+.navbar {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge Styling */
+.badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+
+/* Loading Spinner (for future use) */
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid white;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .col-md-3, .col-md-7 {
+        margin-bottom: 20px;
+    }
+    
+    #image_border {
+        width: 100%;
+        height: auto;
+    }
+    
+    .file-upload {
+        max-height: 300px !important;
+    }
 }
