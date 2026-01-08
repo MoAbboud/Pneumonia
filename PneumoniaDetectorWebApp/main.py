@@ -43,6 +43,8 @@ def allowed_file(filename):
 
 def get_all_predictions(img_path):
     """Get predictions from all three models"""
+    # NOTE: Due to memory constraints on free hosting, we load models one at a time
+    import gc
     predictions = {}
     
     # Custom CNN Model
@@ -56,6 +58,10 @@ def get_all_predictions(img_path):
         'result': result[(cm_pred > THRESHOLDS['CM']).astype("int32")],
         'threshold': THRESHOLDS['CM']
     }
+    # Clear model from memory
+    del model
+    models_cache['CM'] = None
+    gc.collect()
     
     # ResNet50 Model
     modelResNet50 = load_model_lazy('RM')
@@ -68,6 +74,10 @@ def get_all_predictions(img_path):
         'result': result[(rn_pred > THRESHOLDS['RM']).astype("int32")],
         'threshold': THRESHOLDS['RM']
     }
+    # Clear model from memory
+    del modelResNet50
+    models_cache['RM'] = None
+    gc.collect()
     
     # VGG16 Model
     modelVgg19 = load_model_lazy('VM')
@@ -77,6 +87,10 @@ def get_all_predictions(img_path):
         'result': result[(vgg_pred > THRESHOLDS['VM']).astype("int32")],
         'threshold': THRESHOLDS['VM']
     }
+    # Clear model from memory
+    del modelVgg19
+    models_cache['VM'] = None
+    gc.collect()
     
     return predictions
 
