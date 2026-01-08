@@ -165,6 +165,7 @@
             height: 30px;
             border-radius: 8px;
             background-color: var(--border-light);
+            position: relative;
         }
         
         body.dark-mode .progress {
@@ -177,6 +178,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: width 0.6s ease;
+        }
+        
+        .progress-wrapper {
+            position: relative;
+        }
+        
+        .confidence-label {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 600;
+            padding-right: 10px;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+        
+        body.dark-mode .confidence-label {
+            color: var(--text-dark);
         }
         
         .tooltip-icon {
@@ -270,14 +291,73 @@
             color: #6ee7b7;
         }
         
-        .custom-file-label::after {
-            content: "Browse";
+        /* Modern File Upload */
+        .file-upload-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: block;
         }
         
-        body.dark-mode .custom-file-label {
-            background-color: var(--card-dark);
-            color: var(--text-dark);
+        .file-upload-wrapper input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            background-color: var(--bg-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        body.dark-mode .file-upload-label {
+            background-color: var(--bg-dark);
             border-color: var(--border-dark);
+        }
+        
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+        
+        .file-upload-label.has-file {
+            border-color: var(--success-color);
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+        
+        body.dark-mode .file-upload-label.has-file {
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        
+        .file-upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .file-upload-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        body.dark-mode .file-upload-text {
+            color: var(--text-dark);
+        }
+        
+        .file-upload-hint {
+            font-size: 0.85rem;
+            opacity: 0.6;
+            margin-top: 0.5rem;
         }
         
         body.dark-mode .form-control {
@@ -369,46 +449,35 @@
                     <div class="card-body">
                         <form id="uploadForm" action="/submit" method="post" enctype="multipart/form-data">
                             <div class="form-group">
-                                <label for="img">
-                                    Chest X-Ray Image
+                                <label for="img" style="margin-bottom: 1rem;">
+                                    <strong>Chest X-Ray Image</strong>
                                     <span class="tooltip-icon" data-toggle="tooltip" 
                                           title="Upload a chest X-ray image. Minimum size: 150x150 pixels. Supported formats: PNG, JPG, JPEG, GIF, BMP, TIFF">?</span>
                                 </label>
-                                <div class="custom-file">
-                                    <input type="file" name="my_image" id="img" class="custom-file-input" required
+                                <div class="file-upload-wrapper">
+                                    <input type="file" name="my_image" id="img" required
                                            accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,image/tiff">
-                                    <label class="custom-file-label" for="img">Choose file...</label>
+                                    <label class="file-upload-label" id="fileUploadLabel" for="img">
+                                        <div>
+                                            <div class="file-upload-icon">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                            </div>
+                                            <div class="file-upload-text">Click to upload or drag & drop</div>
+                                            <div class="file-upload-hint">PNG, JPG, JPEG, GIF, BMP, TIFF (min 150x150px)</div>
+                                        </div>
+                                    </label>
                                 </div>
+                                <!-- Hidden input to always use ResNet50 for Grad-CAM -->
+                                <input type="hidden" name="options" value="RM">
                             </div>
 
-                            <div class="form-group mt-4">
-                                <label>
-                                    <i class="fas fa-brain"></i> Primary AI Model
-                                    <span class="tooltip-icon" data-toggle="tooltip" 
-                                          title="Select which model to use for Grad-CAM heatmap visualization. All models will run regardless of selection.">?</span>
-                                </label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="options" value="CM" id="customModel" checked>
-                                    <label class="form-check-label" for="customModel">
-                                        Custom CNN <span class="badge badge-primary">Fast</span>
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="options" value="RM" id="resnetModel">
-                                    <label class="form-check-label" for="resnetModel">
-                                        ResNet50 <span class="badge badge-success">Balanced</span>
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="options" value="VM" id="vgg16Model">
-                                    <label class="form-check-label" for="vgg16Model">
-                                        VGG16 <span class="badge badge-info">Deep</span>
-                                    </label>
-                                </div>
+                            <div class="alert alert-info mt-3" style="font-size: 0.9rem;">
+                                <i class="fas fa-info-circle"></i> <strong>All 3 AI models will analyze your X-ray:</strong>
+                                Custom CNN, ResNet50, and VGG16, plus an Ensemble prediction.
                             </div>
 
-                            <button type="submit" class="btn btn-primary btn-block mt-4">
-                                <i class="fas fa-microscope"></i> Analyze X-Ray
+                            <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">
+                                <i class="fas fa-microscope"></i> Analyze with AI
                             </button>
                         </form>
                     </div>
@@ -452,9 +521,13 @@
                             <h2 style="font-size: 2.5rem; font-weight: 700; margin: 1rem 0; color: {% if all_predictions.Ensemble.result == 'Normal' %}var(--success-color){% else %}var(--danger-color){% endif %};">
                                 {{ all_predictions.Ensemble.result }}
                             </h2>
-                            <div class="progress" style="height: 35px;">
-                                <div class="progress-bar {% if all_predictions.Ensemble.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
-                                     style="width: {{ all_predictions.Ensemble.confidence }}%;">
+                            <div class="progress-wrapper">
+                                <div class="progress" style="height: 35px;">
+                                    <div class="progress-bar {% if all_predictions.Ensemble.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
+                                         style="width: {{ all_predictions.Ensemble.confidence }}%;">
+                                    </div>
+                                </div>
+                                <div class="confidence-label" style="font-size: 1rem;">
                                     {{ "%.1f"|format(all_predictions.Ensemble.confidence) }}% Confidence
                                 </div>
                             </div>
@@ -532,9 +605,13 @@
                                     {% endif %}
                                     
                                     <div style="font-size: 1.5rem; font-weight: 700; margin: 1rem 0; color: {% if pred_data.result == 'Normal' %}var(--success-color){% else %}var(--danger-color){% endif %};">
-                                        <i class="fas fa-{% if pred_data.result == 'Normal' %}check-circle{% else %}notes-medical{% endif %}"></i>
-                                        {{ pred_data.result }}
-                                    </div>
+                                        <i class="fas fa-wrapper">
+                                        <div class="progress">
+                                            <div class="progress-bar {% if pred_data.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ pred_data.confidence }}%;">
+                                            </div>
+                                        </div>
+                                        <div class="confidence-label
                                     
                                     <div class="progress">
                                         <div class="progress-bar {% if pred_data.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
@@ -591,10 +668,23 @@
             const loadingOverlay = document.getElementById('loadingOverlay');
             loadingOverlay.classList.add('show');
             
-            // Animate loading steps
-            setTimeout(() => {
-                document.getElementById('loadingStep2').innerHTML = '✓ Loading AI models';
-                document.getElementById('loadingStep3').innerHTML = '⏳ Running predictions';
+            // Animate loading ste with modern styling
+        document.getElementById('img').addEventListener('change', function(e) {
+            const label = document.getElementById('fileUploadLabel');
+            const file = e.target.files[0];
+            
+            if (file) {
+                label.classList.add('has-file');
+                label.innerHTML = `
+                    <div>
+                        <div class="file-upload-icon" style="color: var(--success-color);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="file-upload-text">${file.name}</div>
+                        <div class="file-upload-hint">${(file.size / 1024).toFixed(1)} KB - Ready to analyze</div>
+                    </div>
+                `;
+            }nnerHTML = '⏳ Running predictions';
             }, 1000);
             
             setTimeout(() => {
