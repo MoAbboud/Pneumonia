@@ -10,9 +10,12 @@ app.secret_key = 'your-secret-key-change-this'  # For flash messages
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'}
 
-model = load_model('PNmodel.h5')
-modelResNet50 = load_model('PNmodelResNet50.h5')
-modelVgg19 = load_model('PNmodelVgg.h5')
+# Store models as None initially - load them lazily
+models_cache = {
+    'CM': None,
+    'RM': None,
+    'VM': None
+}
 
 result = {0: 'Pneumonia', 1: 'Normal'}
 
@@ -23,6 +26,17 @@ THRESHOLDS = {
     'VM': 0.3
 }
 
+def load_model_lazy(model_type):
+    """Load model only when needed to save memory"""
+    if models_cache[model_type] is None:
+        if model_type == 'CM':
+            models_cache['CM'] = load_model('PNmodel.h5')
+        elif model_type == 'RM':
+            models_cache['RM'] = load_model('PNmodelResNet50.h5')
+        elif model_type == 'VM':
+            models_cache['VM'] = load_model('PNmodelVgg.h5')
+    return models_cache[model_type]
+
 def allowed_file(filename):
     """Check if file has an allowed extension"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -32,6 +46,7 @@ def get_all_predictions(img_path):
     predictions = {}
     
     # Custom CNN Model
+    model = load_model_lazy('CM')
     x = image.load_img(img_path, target_size=(150, 150))
     x_array = image.img_to_array(x) / 255
     x_reshaped = x_array.reshape(-1, 150, 150, 1)
@@ -43,6 +58,7 @@ def get_all_predictions(img_path):
     }
     
     # ResNet50 Model
+    modelResNet50 = load_model_lazy('RM')
     x = image.load_img(img_path, target_size=(150, 150))
     x_array = image.img_to_array(x) / 255
     x_expanded = np.expand_dims(x_array, axis=0)
@@ -54,6 +70,7 @@ def get_all_predictions(img_path):
     }
     
     # VGG16 Model
+    modelVgg19 = load_model_lazy('VM')
     vgg_pred = modelVgg19.predict(x_expanded, verbose=0)[0, 0]
     predictions['VGG16'] = {
         'confidence': float(vgg_pred * 100),
