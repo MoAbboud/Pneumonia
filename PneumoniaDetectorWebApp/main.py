@@ -2,6 +2,14 @@ import numpy as np
 import os
 import logging
 from flask import Flask, render_template, request, flash
+
+# TensorFlow memory optimization
+import tensorflow as tf
+tf.config.threading.set_inter_op_parallelism_threads(2)
+tf.config.threading.set_intra_op_parallelism_threads(2)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 from keras.models import load_model
 from keras.preprocessing import image
 
@@ -15,12 +23,23 @@ app.secret_key = 'your-secret-key-change-this'  # For flash messages
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'}
 
-# Load all models at startup (we have plenty of RAM now)
+# Preload all models at startup - we have 2GB RAM now!
 logger.info("Loading all models at startup...")
-model = load_model('PNmodel.h5')
-modelResNet50 = load_model('PNmodelResNet50.h5')
-modelVgg19 = load_model('PNmodelVgg.h5')
+model_custom = load_model('PNmodel.h5')
+model_resnet = load_model('PNmodelResNet50.h5')
+model_vgg = load_model('PNmodelVgg.h5')
 logger.info("All models loaded successfully!")
+
+# Model cache for easy access
+_model_cache = {
+    'Custom CNN': model_custom,
+    'ResNet50': model_resnet,
+    'VGG16': model_vgg
+}
+
+def get_model(model_name):
+    """Get preloaded model from cache"""
+    return _model_cache[model_name]
 
 result = {0: 'Pneumonia', 1: 'Normal'}
 
@@ -35,50 +54,71 @@ def allowed_file(filename):
     """Check if file has an allowed extension"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def get_all_predictions(img_path):
-    """Get predictions from all three models - optimized for paid tier"""
+def get_all_predictions(img_path, selected_model_only=False, model_name='Custom CNN'):
+    """Get predictions - optimized for low memory"""
     predictions = {}
     
     try:
         logger.info(f"Starting predictions for image: {img_path}")
         
-        # Custom CNN Model
-        logger.info("Making Custom CNN prediction...")
+        # Load image once
         x = image.load_img(img_path, target_size=(150, 150))
         x_array = image.img_to_array(x) / 255
-        x_reshaped = x_array.reshape(-1, 150, 150, 1)
-        cm_pred = model.predict(x_reshaped, verbose=0)[0, 0]
-        predictions['Custom CNN'] = {
-            'confidence': float(cm_pred * 100),
-            'result': result[(cm_pred > THRESHOLDS['CM']).astype("int32")],
-            'threshold': THRESHOLDS['CM']
-        }
-        logger.info(f"Custom CNN result: {predictions['Custom CNN']}")
         
-        # ResNet50 Model
-        logger.info("Making ResNet50 prediction...")
-        x = image.load_img(img_path, target_size=(150, 150))
-        x_array = image.img_to_array(x) / 255
-        x_expanded = np.expand_dims(x_array, axis=0)
-        rn_pred = modelResNet50.predict(x_expanded, verbose=0)[0, 0]
-        predictions['ResNet50'] = {
-            'confidence': float(rn_pred * 100),
-            'result': result[(rn_pred > THRESHOLDS['RM']).astype("int32")],
-            'threshold': THRESHOLDS['RM']
-        }
-        logger.info(f"ResNet50 result: {predictions['ResNet50']}")
+        if selected_model_only:
+            # Only predict with selected model to save memory
+            logger.info(f"Making {model_name} prediction only...")
+            model_obj = get_model(model_name)
+            
+            if model_name == 'Custom CNN':
+                x_input = x_array.reshape(-1, 150, 150, 1)
+                pred = model_obj.predict(x_input, verbose=0)[0, 0]
+                threshold = THRESHOLDS['CM']
+            else:
+                x_input = np.expand_dims(x_array, axis=0)
+                pred = model_obj.predict(x_input, verbose=0)[0, 0]
+                threshold = THRESHOLDS['RM'] if model_name == 'ResNet50' else THRESHOLDS['VM']
+            
+            predictions[model_name] = {
+                'confidence': float(pred * 100),
+                'result': result[(pred > threshold).astype("int32")],
+                'threshold': threshold
+            }
+        else:
+            # Predict with all models (memory intensive!)
+            # Custom CNN Model
+            logger.info("Making Custom CNN prediction...")
+            x_reshaped = x_array.reshape(-1, 150, 150, 1)
+            cm_pred = get_model('Custom CNN').predict(x_reshaped, verbose=0)[0, 0]
+            predictions['Custom CNN'] = {
+                'confidence': float(cm_pred * 100),
+                'result': result[(cm_pred > THRESHOLDS['CM']).astype("int32")],
+                'threshold': THRESHOLDS['CM']
+            }
+            logger.info(f"Custom CNN result: {predictions['Custom CNN']}")
+            
+            # ResNet50 Model
+            logger.info("Making ResNet50 prediction...")
+            x_expanded = np.expand_dims(x_array, axis=0)
+            rn_pred = get_model('ResNet50').predict(x_expanded, verbose=0)[0, 0]
+            predictions['ResNet50'] = {
+                'confidence': float(rn_pred * 100),
+                'result': result[(rn_pred > THRESHOLDS['RM']).astype("int32")],
+                'threshold': THRESHOLDS['RM']
+            }
+            logger.info(f"ResNet50 result: {predictions['ResNet50']}")
+            
+            # VGG16 Model
+            logger.info("Making VGG16 prediction...")
+            vgg_pred = get_model('VGG16').predict(x_expanded, verbose=0)[0, 0]
+            predictions['VGG16'] = {
+                'confidence': float(vgg_pred * 100),
+                'result': result[(vgg_pred > THRESHOLDS['VM']).astype("int32")],
+                'threshold': THRESHOLDS['VM']
+            }
+            logger.info(f"VGG16 result: {predictions['VGG16']}")
         
-        # VGG16 Model
-        logger.info("Making VGG16 prediction...")
-        vgg_pred = modelVgg19.predict(x_expanded, verbose=0)[0, 0]
-        predictions['VGG16'] = {
-            'confidence': float(vgg_pred * 100),
-            'result': result[(vgg_pred > THRESHOLDS['VM']).astype("int32")],
-            'threshold': THRESHOLDS['VM']
-        }
-        logger.info(f"VGG16 result: {predictions['VGG16']}")
-        
-        logger.info("All predictions completed successfully")
+        logger.info("Predictions completed successfully")
         return predictions
         
     except Exception as e:
@@ -123,17 +163,15 @@ def performPrediction():
             logger.info(f"Saving file to: {xray_img_path}")
             xray_img.save(xray_img_path)
             
-            # Get predictions from all models
-            logger.info("Getting predictions from all models...")
-            all_predictions = get_all_predictions(xray_img_path)
-            
             # Get selected model
             modelSelection = request.form.get('options', 'CM')
-            logger.info(f"Selected model: {modelSelection}")
-            
-            # Map selection to model name
             model_names = {'CM': 'Custom CNN', 'RM': 'ResNet50', 'VM': 'VGG16'}
             selected_model_name = model_names.get(modelSelection, 'Custom CNN')
+            logger.info(f"Selected model: {selected_model_name}")
+            
+            # Get predictions from all models (we have 2GB RAM!)
+            logger.info("Getting predictions from all models...")
+            all_predictions = get_all_predictions(xray_img_path, selected_model_only=False)
             
             # Get primary prediction from selected model
             primary_prediction = all_predictions[selected_model_name]
