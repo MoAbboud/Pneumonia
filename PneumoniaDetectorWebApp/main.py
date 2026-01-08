@@ -23,22 +23,22 @@ app.secret_key = 'your-secret-key-change-this'  # For flash messages
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'}
 
-# Preload all models at startup - we have 2GB RAM now!
-logger.info("Loading all models at startup...")
-model_custom = load_model('PNmodel.h5')
-model_resnet = load_model('PNmodelResNet50.h5')
-model_vgg = load_model('PNmodelVgg.h5')
-logger.info("All models loaded successfully!")
-
-# Model cache for easy access
-_model_cache = {
-    'Custom CNN': model_custom,
-    'ResNet50': model_resnet,
-    'VGG16': model_vgg
+# Model paths
+MODEL_PATHS = {
+    'Custom CNN': 'PNmodel.h5',
+    'ResNet50': 'PNmodelResNet50.h5',
+    'VGG16': 'PNmodelVgg.h5'
 }
 
+# Model cache - load on demand to save memory
+_model_cache = {}
+
 def get_model(model_name):
-    """Get preloaded model from cache"""
+    """Load model on demand (lazy loading to save memory)"""
+    if model_name not in _model_cache:
+        logger.info(f"Loading {model_name} model...")
+        _model_cache[model_name] = load_model(MODEL_PATHS[model_name])
+        logger.info(f"{model_name} model loaded!")
     return _model_cache[model_name]
 
 result = {0: 'Pneumonia', 1: 'Normal'}
@@ -169,9 +169,9 @@ def performPrediction():
             selected_model_name = model_names.get(modelSelection, 'Custom CNN')
             logger.info(f"Selected model: {selected_model_name}")
             
-            # Get predictions from all models (we have 2GB RAM!)
-            logger.info("Getting predictions from all models...")
-            all_predictions = get_all_predictions(xray_img_path, selected_model_only=False)
+            # MEMORY OPTIMIZATION: Only predict with selected model to avoid OOM
+            logger.info(f"Getting prediction from {selected_model_name} only...")
+            all_predictions = get_all_predictions(xray_img_path, selected_model_only=True, model_name=selected_model_name)
             
             # Get primary prediction from selected model
             primary_prediction = all_predictions[selected_model_name]
