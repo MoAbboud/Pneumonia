@@ -15,12 +15,12 @@ app.secret_key = 'your-secret-key-change-this'  # For flash messages
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'}
 
-# Store models as None initially - load them lazily
-models_cache = {
-    'CM': None,
-    'RM': None,
-    'VM': None
-}
+# Load all models at startup (we have plenty of RAM now)
+logger.info("Loading all models at startup...")
+model = load_model('PNmodel.h5')
+modelResNet50 = load_model('PNmodelResNet50.h5')
+modelVgg19 = load_model('PNmodelVgg.h5')
+logger.info("All models loaded successfully!")
 
 result = {0: 'Pneumonia', 1: 'Normal'}
 
@@ -31,36 +31,22 @@ THRESHOLDS = {
     'VM': 0.3
 }
 
-def load_model_lazy(model_type):
-    """Load model only when needed to save memory"""
-    if models_cache[model_type] is None:
-        if model_type == 'CM':
-            models_cache['CM'] = load_model('PNmodel.h5')
-        elif model_type == 'RM':
-            models_cache['RM'] = load_model('PNmodelResNet50.h5')
-        elif model_type == 'VM':
-            models_cache['VM'] = load_model('PNmodelVgg.h5')
-    return models_cache[model_type]
-
 def allowed_file(filename):
     """Check if file has an allowed extension"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_all_predictions(img_path):
-    """Get predictions from all three models"""
-    import gc
+    """Get predictions from all three models - optimized for paid tier"""
     predictions = {}
     
     try:
         logger.info(f"Starting predictions for image: {img_path}")
         
         # Custom CNN Model
-        logger.info("Loading Custom CNN model...")
-        model = load_model_lazy('CM')
+        logger.info("Making Custom CNN prediction...")
         x = image.load_img(img_path, target_size=(150, 150))
         x_array = image.img_to_array(x) / 255
         x_reshaped = x_array.reshape(-1, 150, 150, 1)
-        logger.info("Making Custom CNN prediction...")
         cm_pred = model.predict(x_reshaped, verbose=0)[0, 0]
         predictions['Custom CNN'] = {
             'confidence': float(cm_pred * 100),
@@ -68,17 +54,12 @@ def get_all_predictions(img_path):
             'threshold': THRESHOLDS['CM']
         }
         logger.info(f"Custom CNN result: {predictions['Custom CNN']}")
-        del model
-        models_cache['CM'] = None
-        gc.collect()
         
         # ResNet50 Model
-        logger.info("Loading ResNet50 model...")
-        modelResNet50 = load_model_lazy('RM')
+        logger.info("Making ResNet50 prediction...")
         x = image.load_img(img_path, target_size=(150, 150))
         x_array = image.img_to_array(x) / 255
         x_expanded = np.expand_dims(x_array, axis=0)
-        logger.info("Making ResNet50 prediction...")
         rn_pred = modelResNet50.predict(x_expanded, verbose=0)[0, 0]
         predictions['ResNet50'] = {
             'confidence': float(rn_pred * 100),
@@ -86,13 +67,8 @@ def get_all_predictions(img_path):
             'threshold': THRESHOLDS['RM']
         }
         logger.info(f"ResNet50 result: {predictions['ResNet50']}")
-        del modelResNet50
-        models_cache['RM'] = None
-        gc.collect()
         
         # VGG16 Model
-        logger.info("Loading VGG16 model...")
-        modelVgg19 = load_model_lazy('VM')
         logger.info("Making VGG16 prediction...")
         vgg_pred = modelVgg19.predict(x_expanded, verbose=0)[0, 0]
         predictions['VGG16'] = {
@@ -101,9 +77,6 @@ def get_all_predictions(img_path):
             'threshold': THRESHOLDS['VM']
         }
         logger.info(f"VGG16 result: {predictions['VGG16']}")
-        del modelVgg19
-        models_cache['VM'] = None
-        gc.collect()
         
         logger.info("All predictions completed successfully")
         return predictions
