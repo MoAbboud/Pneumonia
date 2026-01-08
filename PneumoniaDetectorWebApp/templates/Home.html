@@ -640,31 +640,39 @@
                         <div class="card-body">
                             {% for model_name, pred_data in all_predictions.items() %}
                                 {% if model_name != 'Ensemble' %}
-                                <div class="model-comparison-card {{ 'normal' if pred_data.result == 'Normal' else 'pneumonia' }} mb-3">
-                                    <h6 style="font-weight: 700; margin-bottom: 0.5rem;">{{ model_name }}</h6>
+                                <div class="model-comparison-card {{ 'normal' if pred_data.result == 'Normal' else 'pneumonia' }}">
+                                    <!-- Model Header -->
+                                    <div class="model-header">
+                                        <span class="model-name">
+                                            <i class="fas fa-brain"></i> {{ model_name }}
+                                        </span>
+                                        <span class="model-result {{ 'normal' if pred_data.result == 'Normal' else 'pneumonia' }}">
+                                            {{ pred_data.result }}
+                                        </span>
+                                    </div>
                                     
+                                    <!-- Model Metrics -->
                                     {% if model_metrics and model_metrics[model_name] %}
                                     <div class="mb-2">
-                                        <span class="metric-badge high">Acc: {{ model_metrics[model_name].accuracy }}%</span>
-                                        <span class="metric-badge high">Prec: {{ model_metrics[model_name].precision }}%</span>
+                                        <span class="metric-badge high">Accuracy: {{ model_metrics[model_name].accuracy }}%</span>
+                                        <span class="metric-badge high">Precision: {{ model_metrics[model_name].precision }}%</span>
                                     </div>
-                                    <p style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 1rem;">
+                                    <p style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.75rem;">
                                         {{ model_metrics[model_name].description }}
                                     </p>
                                     {% endif %}
                                     
-                                    <div style="font-size: 1.5rem; font-weight: 700; margin: 1rem 0; color: {% if pred_data.result == 'Normal' %}var(--success-color){% else %}var(--danger-color){% endif %};">
-                                        <i class="fas fa-wrapper">
+                                    <!-- Confidence Bar -->
+                                    <div class="mb-2">
+                                        <small style="font-weight: 600; opacity: 0.8;">Confidence Level</small>
+                                    </div>
+                                    <div class="progress-wrapper">
                                         <div class="progress">
                                             <div class="progress-bar {% if pred_data.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
                                                  style="width: {{ pred_data.confidence }}%;">
                                             </div>
                                         </div>
-                                        <div class="confidence-label
-                                    
-                                    <div class="progress">
-                                        <div class="progress-bar {% if pred_data.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
-                                             style="width: {{ pred_data.confidence }}%;">
+                                        <div class="confidence-label">
                                             {{ "%.1f"|format(pred_data.confidence) }}%
                                         </div>
                                     </div>
