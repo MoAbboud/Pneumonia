@@ -777,8 +777,16 @@
                                 <div class="summary-label">Model Agreement</div>
                                 <div class="agreement-indicator agreement-{{ model_agreement.agreeing }}">
                                     {% if model_agreement.unanimous %}
-                                        <i class="fas fa-check-circle"></i>
-                                        <span><strong>All {{ model_agreement.total }} models agree!</strong> High confidence diagnosis</span>
+                                        {% if confidence >= 75 %}
+                                            <i class="fas fa-check-circle"></i>
+                                            <span><strong>All {{ model_agreement.total }} models agree!</strong> High confidence diagnosis</span>
+                                        {% elif confidence >= 60 %}
+                                            <i class="fas fa-check-circle"></i>
+                                            <span><strong>All {{ model_agreement.total }} models agree</strong> - Moderate confidence ({{ "%.1f"|format(confidence) }}%)</span>
+                                        {% else %}
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            <span><strong>All {{ model_agreement.total }} models agree</strong> but confidence is low ({{ "%.1f"|format(confidence) }}%) - Review recommended</span>
+                                        {% endif %}
                                     {% elif model_agreement.agreeing == 2 %}
                                         <i class="fas fa-exclamation-circle"></i>
                                         <span><strong>{{ model_agreement.agreeing }}/{{ model_agreement.total }} models agree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Review recommended</span>
@@ -1028,6 +1036,33 @@
         $(function () {
             $('[data-toggle="tooltip"]').tooltip();
         });
+        
+        // Dynamically style agreement indicator based on confidence
+        {% if model_agreement and model_agreement.unanimous and confidence %}
+        (function() {
+            const confidence = {{ confidence }};
+            const agreementIndicator = document.querySelector('.agreement-indicator.agreement-3');
+            if (agreementIndicator) {
+                if (confidence < 60) {
+                    // Low confidence - use warning colors even if all agree
+                    agreementIndicator.style.backgroundColor = 'rgba(245, 158, 11, 0.15)';
+                    agreementIndicator.style.borderColor = '#f59e0b';
+                    agreementIndicator.style.color = '#92400e';
+                    const icon = agreementIndicator.querySelector('i');
+                    if (icon) {
+                        icon.style.color = '#f59e0b';
+                        icon.classList.remove('fa-check-circle');
+                        icon.classList.add('fa-exclamation-circle');
+                    }
+                } else if (confidence < 75) {
+                    // Moderate confidence - use light green
+                    agreementIndicator.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                    agreementIndicator.style.borderColor = '#10b981';
+                }
+                // High confidence (>75%) keeps the default green styling
+            }
+        })();
+        {% endif %}
     </script>
 </body>
 </html>
