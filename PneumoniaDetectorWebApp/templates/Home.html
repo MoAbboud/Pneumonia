@@ -1088,7 +1088,20 @@
                         <span><strong>All {{ model_agreement.total }} models agree</strong> - Moderate confidence ({{ "%.1f"|format(confidence) }}%)</span>
                     {% else %}
                         <i class="fas fa-exclamation-circle"></i>
-              wo Column Grid: Images Left, Circles Right -->
+                        <span><strong>All {{ model_agreement.total }} models agree</strong> but confidence is low ({{ "%.1f"|format(confidence) }}%) - Review recommended</span>
+                    {% endif %}
+                {% elif model_agreement.agreeing == 2 %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span><strong>{{ model_agreement.agreeing }}/{{ model_agreement.total }} models agree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Review recommended</span>
+                {% else %}
+                    <i class="fas fa-times-circle"></i>
+                    <span><strong>Models disagree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Medical review required</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Two Column Grid: Images Left, Circles Right -->
         <div class="results-main-grid">
             <!-- LEFT COLUMN: Images -->
             <div class="image-comparison-container">
