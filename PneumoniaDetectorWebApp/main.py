@@ -220,6 +220,33 @@ def generate_gradcam(img_path, model_name='Custom CNN'):
         logger.error(f"Error generating Grad-CAM: {str(e)}", exc_info=True)
         return None
 
+def calculate_model_agreement(predictions):
+    """Calculate agreement between models"""
+    try:
+        # Exclude Ensemble from agreement calculation
+        model_results = [pred['result'] for name, pred in predictions.items() if name != 'Ensemble']
+        
+        if not model_results:
+            return None
+        
+        # Count how many agree
+        pneumonia_count = model_results.count('Pneumonia')
+        normal_count = model_results.count('Normal')
+        total = len(model_results)
+        agreement_count = max(pneumonia_count, normal_count)
+        
+        return {
+            'total': total,
+            'agreeing': agreement_count,
+            'majority_result': 'Pneumonia' if pneumonia_count > normal_count else 'Normal',
+            'pneumonia_votes': pneumonia_count,
+            'normal_votes': normal_count,
+            'unanimous': agreement_count == total
+        }
+    except Exception as e:
+        logger.error(f"Error calculating agreement: {str(e)}")
+        return None
+
 def get_all_predictions(img_path, selected_model_only=False, model_name='Custom CNN'):
     """Get predictions - optimized for low memory"""
     predictions = {}
@@ -401,6 +428,9 @@ def performPrediction():
             # Get primary prediction (use Ensemble if all models ran)
             primary_prediction = all_predictions.get('Ensemble', all_predictions[selected_model_name])
             
+            # Calculate model agreement
+            model_agreement = calculate_model_agreement(all_predictions)
+            
             logger.info("Rendering results...")
             return render_template("Home.html", 
                                  xray_prediction=primary_prediction['result'],
@@ -409,7 +439,8 @@ def performPrediction():
                                  all_predictions=all_predictions,
                                  selected_model=selected_model_name,
                                  heatmap_path=heatmap_path,
-                                 model_metrics=MODEL_METRICS)
+                                 model_metrics=MODEL_METRICS,
+                                 model_agreement=model_agreement)
         
         return render_template("Home.html")
         

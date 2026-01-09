@@ -425,6 +425,196 @@
             display: inline-block;
             margin-bottom: 1rem;
         }
+        
+        /* Diagnosis Summary Card Styles */
+        .diagnosis-summary-card {
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(59, 130, 246, 0.05) 100%);
+        }
+        
+        body.dark-mode .diagnosis-summary-card {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.15) 100%);
+        }
+        
+        .summary-item {
+            margin-bottom: 1rem;
+        }
+        
+        .summary-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .summary-action {
+            font-size: 0.95rem;
+            padding: 0.75rem;
+            background-color: rgba(37, 99, 235, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        body.dark-mode .summary-action {
+            background-color: rgba(37, 99, 235, 0.2);
+        }
+        
+        /* Model Agreement Indicator */
+        .agreement-indicator {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        
+        .agreement-indicator i {
+            font-size: 1.2rem;
+        }
+        
+        .agreement-indicator.agreement-3 {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--success-color);
+            color: #047857;
+        }
+        
+        body.dark-mode .agreement-indicator.agreement-3 {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+        
+        .agreement-indicator.agreement-3 i {
+            color: var(--success-color);
+        }
+        
+        .agreement-indicator.agreement-2 {
+            background-color: rgba(245, 158, 11, 0.15);
+            border: 2px solid #f59e0b;
+            color: #92400e;
+        }
+        
+        body.dark-mode .agreement-indicator.agreement-2 {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+        
+        .agreement-indicator.agreement-2 i {
+            color: #f59e0b;
+        }
+        
+        .agreement-indicator.agreement-1 {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 2px solid var(--danger-color);
+            color: #991b1b;
+        }
+        
+        body.dark-mode .agreement-indicator.agreement-1 {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .agreement-indicator.agreement-1 i {
+            color: var(--danger-color);
+        }
+        
+        /* Circular Confidence Gauge */
+        .confidence-gauge-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .circular-progress {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .circular-progress-svg {
+            transform: rotate(-90deg);
+        }
+        
+        .circular-progress-bg {
+            fill: none;
+            stroke: var(--border-light);
+            stroke-width: 10;
+        }
+        
+        body.dark-mode .circular-progress-bg {
+            stroke: var(--border-dark);
+        }
+        
+        .circular-progress-bar {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease;
+        }
+        
+        .circular-progress-bar.success {
+            stroke: var(--success-color);
+        }
+        
+        .circular-progress-bar.danger {
+            stroke: var(--danger-color);
+        }
+        
+        .circular-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .circular-progress-text .percentage {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        /* Heatmap Legend */
+        .heatmap-legend {
+            padding: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+        }
+        
+        body.dark-mode .heatmap-legend {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        
+        /* Button Styles */
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -557,6 +747,62 @@
             <!-- Middle Column: Image & Heatmap -->
             <div class="col-lg-5">
                 {% if xray_prediction %}
+                    <!-- Diagnosis Summary Card -->
+                    <div class="card diagnosis-summary-card">
+                        <div class="card-body">
+                            <h5 class="mb-3" style="font-weight: 700; display: flex; align-items: center;">
+                                <i class="fas fa-clipboard-check" style="margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                Diagnosis Summary
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Primary Result</div>
+                                        <div class="summary-value {% if xray_prediction == 'Normal' %}text-success{% else %}text-danger{% endif %}">
+                                            {{ xray_prediction }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Ensemble Confidence</div>
+                                        <div class="summary-value">{{ "%.1f"|format(confidence) }}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if model_agreement %}
+                            <div class="mt-3">
+                                <div class="summary-label">Model Agreement</div>
+                                <div class="agreement-indicator agreement-{{ model_agreement.agreeing }}">
+                                    {% if model_agreement.unanimous %}
+                                        <i class="fas fa-check-circle"></i>
+                                        <span><strong>All {{ model_agreement.total }} models agree!</strong> High confidence diagnosis</span>
+                                    {% elif model_agreement.agreeing == 2 %}
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span><strong>{{ model_agreement.agreeing }}/{{ model_agreement.total }} models agree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Review recommended</span>
+                                    {% else %}
+                                        <i class="fas fa-times-circle"></i>
+                                        <span><strong>Models disagree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Medical review required</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mt-3 pt-3" style="border-top: 1px solid var(--border-light);">
+                                <div class="summary-label">Recommended Action</div>
+                                <div class="summary-action">
+                                    {% if xray_prediction == 'Pneumonia' %}
+                                        <i class="fas fa-user-md"></i> Consult a healthcare professional immediately
+                                    {% else %}
+                                        <i class="fas fa-thumbs-up"></i> Results appear normal - routine follow-up as needed
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Ensemble Result Card -->
                     {% if all_predictions.Ensemble %}
                     <div class="card ensemble-highlight">
@@ -608,10 +854,24 @@
                                           title="Heatmap shows WHERE the AI model is looking. Red/yellow areas indicate regions that influenced the diagnosis decision.">?</span>
                                 </div>
                                 <div class="card-body text-center p-2">
-                                    <img src="{{ heatmap_path }}" alt="Heatmap" 
+                                    <img id="heatmapImage" src="{{ heatmap_path }}" alt="Heatmap" 
                                          style="max-width: 100%; height: 400px; object-fit: contain; border-radius: 8px;">
-                                    <div class="mt-2">
+                                    <div class="mt-3">
                                         <span class="badge badge-secondary">{{ selected_model }}</span>
+                                        <div class="mt-2">
+                                            <a href="{{ heatmap_path }}" download="pneumonia_heatmap_{{ selected_model.replace(' ', '_') }}.jpg" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download"></i> Download Heatmap
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 heatmap-legend">
+                                        <small style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Heatmap Legend:</small>
+                                        <div style="display: flex; justify-content: center; gap: 1rem; font-size: 0.75rem;">
+                                            <span><span class="legend-color" style="background: #ff0000;"></span> High Attention</span>
+                                            <span><span class="legend-color" style="background: #ffff00;"></span> Medium</span>
+                                            <span><span class="legend-color" style="background: #0000ff;"></span> Low</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -662,18 +922,21 @@
                                     </p>
                                     {% endif %}
                                     
-                                    <!-- Confidence Bar -->
+                                    <!-- Confidence Gauge -->
                                     <div class="mb-2">
                                         <small style="font-weight: 600; opacity: 0.8;">Confidence Level</small>
                                     </div>
-                                    <div class="progress-wrapper">
-                                        <div class="progress">
-                                            <div class="progress-bar {% if pred_data.result == 'Normal' %}bg-success{% else %}bg-danger{% endif %}" 
-                                                 style="width: {{ pred_data.confidence }}%;">
+                                    <div class="confidence-gauge-wrapper">
+                                        <div class="circular-progress" data-percentage="{{ pred_data.confidence }}" data-result="{{ pred_data.result }}">
+                                            <svg class="circular-progress-svg" width="120" height="120">
+                                                <circle class="circular-progress-bg" cx="60" cy="60" r="50"></circle>
+                                                <circle class="circular-progress-bar {{ 'success' if pred_data.result == 'Normal' else 'danger' }}" 
+                                                        cx="60" cy="60" r="50"
+                                                        style="stroke-dasharray: {{ pred_data.confidence * 3.14 }} 314;"></circle>
+                                            </svg>
+                                            <div class="circular-progress-text">
+                                                <span class="percentage">{{ "%.0f"|format(pred_data.confidence) }}%</span>
                                             </div>
-                                        </div>
-                                        <div class="confidence-label">
-                                            {{ "%.1f"|format(pred_data.confidence) }}%
                                         </div>
                                     </div>
                                 </div>
