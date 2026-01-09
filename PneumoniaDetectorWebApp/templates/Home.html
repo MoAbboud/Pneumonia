@@ -751,10 +751,9 @@
         /* Three Circles Layout */
         .model-circles-container {
             display: flex;
-            justify-content: center;
-            gap: 3rem;
-            margin: 2rem 0;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 2rem;
+            margin: 0;
         }
         
         .model-circle-item {
@@ -773,16 +772,15 @@
         /* Image Comparison Container */
         .image-comparison-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             gap: 2rem;
-            margin: 3rem 0;
-            flex-wrap: wrap;
+            margin: 0;
         }
         
         .image-wrapper {
             position: relative;
             flex: 0 0 auto;
-            max-width: 500px;
+            width: 100%;
         }
         
         .image-wrapper img {
@@ -803,7 +801,21 @@
             text-align: center;
             margin-top: 1rem;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
+        }
+        
+        /* Two Column Layout for Results */
+        .results-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 992px) {
+            .results-main-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         /* Legend Fixed Position */
@@ -812,7 +824,7 @@
             bottom: 20px;
             left: 20px;
             background-color: var(--card-light);
-            padding: 1rem;
+            padding: 0.75rem 1.25rem;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 100;
@@ -820,6 +832,19 @@
         
         body.dark-mode .heatmap-legend-fixed {
             background-color: var(--card-dark);
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
         }
         
         /* Compact Summary Bar */
@@ -1063,70 +1088,82 @@
                         <span><strong>All {{ model_agreement.total }} models agree</strong> - Moderate confidence ({{ "%.1f"|format(confidence) }}%)</span>
                     {% else %}
                         <i class="fas fa-exclamation-circle"></i>
-                        <span><strong>All {{ model_agreement.total }} models agree</strong> but confidence is low ({{ "%.1f"|format(confidence) }}%) - Review recommended</span>
-                    {% endif %}
-                {% elif model_agreement.agreeing == 2 %}
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span><strong>{{ model_agreement.agreeing }}/{{ model_agreement.total }} models agree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Review recommended</span>
-                {% else %}
-                    <i class="fas fa-times-circle"></i>
-                    <span><strong>Models disagree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Medical review required</span>
+              wo Column Grid: Images Left, Circles Right -->
+        <div class="results-main-grid">
+            <!-- LEFT COLUMN: Images -->
+            <div class="image-comparison-container">
+                <div class="image-wrapper">
+                    <img src="{{ xray_img_path }}" alt="Original X-Ray">
+                    <div class="image-label">
+                        <i class="fas fa-x-ray"></i> Original X-Ray
+                    </div>
+                </div>
+                {% if heatmap_path %}
+                <div class="image-wrapper">
+                    <img src="{{ heatmap_path }}" alt="Grad-CAM Heatmap">
+                    <div class="image-label">
+                        <i class="fas fa-fire"></i> Grad-CAM Analysis ({{ selected_model }})
+                        <div class="mt-2">
+                            <a href="{{ heatmap_path }}" download="pneumonia_heatmap_{{ selected_model.replace(' ', '_') }}.jpg" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- RIGHT COLUMN: Model Circles -->
+            <div class="model-circles-container">
+                {% if all_predictions %}
+                    {% for model_name, pred_data in all_predictions.items() %}
+                        {% if model_name != 'Ensemble' %}
+                        <div class="model-circle-item">
+                            <h6>{{ model_name }}</h6>
+                            <div class="circular-progress" data-percentage="{{ pred_data.confidence }}" data-result="{{ pred_data.result }}">
+                                <svg class="circular-progress-svg" width="140" height="140">
+                                    <circle class="circular-progress-bg" cx="70" cy="70" r="60"></circle>
+                                    <circle class="circular-progress-bar {{ 'success' if pred_data.result == 'Normal' else 'danger' }}" 
+                                            cx="70" cy="70" r="60"
+                                            style="stroke-dasharray: {{ pred_data.confidence * 3.77 }} 377;"></circle>
+                                </svg>
+                                <div class="circular-progress-text">
+                                    <span class="percentage" style="font-size: 1.8rem;">{{ "%.0f"|format(pred_data.confidence) }}%</span>
+                                    <span style="font-size: 0.75rem; display: block; margin-top: 0.25rem; font-weight: 600; color: {% if pred_data.result == 'Normal' %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                                        {{ pred_data.result }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% if model_metrics and model_metrics[model_name] %}
+                            <div class="mt-2" style="font-size: 0.75rem; opacity: 0.7;">
+                                Acc: {{ model_metrics[model_name].accuracy }}% | Prec: {{ model_metrics[model_name].precision }}%
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
             </div>
         </div>
-        {% endif %}
+    </div>
 
-        <!-- Three Model Circles -->
-        <div class="model-circles-container">
-            {% if all_predictions %}
-                {% for model_name, pred_data in all_predictions.items() %}
-                    {% if model_name != 'Ensemble' %}
-                    <div class="model-circle-item">
-                        <h6>{{ model_name }}</h6>
-                        <div class="circular-progress" data-percentage="{{ pred_data.confidence }}" data-result="{{ pred_data.result }}">
-                            <svg class="circular-progress-svg" width="140" height="140">
-                                <circle class="circular-progress-bg" cx="70" cy="70" r="60"></circle>
-                                <circle class="circular-progress-bar {{ 'success' if pred_data.result == 'Normal' else 'danger' }}" 
-                                        cx="70" cy="70" r="60"
-                                        style="stroke-dasharray: {{ pred_data.confidence * 3.77 }} 377;"></circle>
-                            </svg>
-                            <div class="circular-progress-text">
-                                <span class="percentage" style="font-size: 1.8rem;">{{ "%.0f"|format(pred_data.confidence) }}%</span>
-                                <span style="font-size: 0.75rem; display: block; margin-top: 0.25rem; font-weight: 600; color: {% if pred_data.result == 'Normal' %}var(--success-color){% else %}var(--danger-color){% endif %};">
-                                    {{ pred_data.result }}
-                                </span>
-                            </div>
-                        </div>
-                        {% if model_metrics and model_metrics[model_name] %}
-                        <div class="mt-2" style="font-size: 0.75rem; opacity: 0.7;">
-                            Acc: {{ model_metrics[model_name].accuracy }}% | Prec: {{ model_metrics[model_name].precision }}%
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
-
-        <!-- Two Images Side by Side -->
-        <div class="image-comparison-container">
-            <div class="image-wrapper">
-                <img src="{{ xray_img_path }}" alt="Original X-Ray">
-                <div class="image-label">
-                    <i class="fas fa-x-ray"></i> Original X-Ray
-                </div>
+    <!-- Legend Fixed Bottom Left - Horizontal Layout -->
+    <div class="heatmap-legend-fixed">
+        <div class="legend-items">
+            <small style="font-weight: 600; margin-right: 0.5rem;">Heatmap:</small>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #ff0000;"></span>
+                <span>High</span>
             </div>
-            {% if heatmap_path %}
-            <div class="image-wrapper">
-                <img src="{{ heatmap_path }}" alt="Grad-CAM Heatmap">
-                <div class="image-label">
-                    <i class="fas fa-fire"></i> Grad-CAM Analysis ({{ selected_model }})
-                    <div class="mt-2">
-                        <a href="{{ heatmap_path }}" download="pneumonia_heatmap_{{ selected_model.replace(' ', '_') }}.jpg" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-download"></i> Download
-                        </a>
-                    </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #ffff00;"></span>
+                <span>Medium</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #0000ff;"></span>
+                <span>Low</span>
+            
                 </div>
             </div>
             {% endif %}
