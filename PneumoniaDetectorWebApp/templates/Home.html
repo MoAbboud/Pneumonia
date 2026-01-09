@@ -637,6 +637,108 @@
             width: 300px;
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none; /* Hidden by default */
+        }
+        
+        /* Floating Upload Button */
+        .floating-upload-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .floating-upload-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+        }
+        
+        .floating-upload-btn.active {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        /* Upload Panel (expands from button) */
+        .upload-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            background-color: var(--card-light);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        body.dark-mode .upload-panel {
+            background-color: var(--card-dark);
+        }
+        
+        .upload-panel.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        
+        .upload-panel-header {
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        body.dark-mode .upload-panel-header {
+            border-bottom-color: var(--border-dark);
+        }
+        
+        .upload-panel-header h6 {
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .upload-panel-close {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        body.dark-mode .upload-panel-close {
+            color: var(--text-dark);
+        }
+        
+        .upload-panel-close:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        
+        .upload-panel-body {
+            padding: 1rem;
         }
         
         /* Results Layout */
@@ -882,25 +984,35 @@
     </div>
     
     {% else %}
-    <!-- COMPACT UPLOAD WIDGET (After Analysis - Top Right) -->
-    <div class="upload-widget-compact">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-upload"></i> Analyze Another
-            </div>
-            <div class="card-body p-3">
-                <form id="uploadFormCompact" action="/submit" method="post" enctype="multipart/form-data">
-                    <div class="form-group mb-2">
-                        <input type="file" name="my_image" id="imgCompact" required
-                               accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,image/tiff"
-                               style="font-size: 0.85rem;">
-                        <input type="hidden" name="options" value="RM">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block btn-sm">
-                        <i class="fas fa-microscope"></i> Analyze
-                    </button>
-                </form>
-            </div>
+    <!-- FLOATING UPLOAD BUTTON (Bottom Right) -->
+    <button class="floating-upload-btn" id="floatingUploadBtn" title="Upload another X-ray">
+        <i class="fas fa-plus"></i>
+    </button>
+    
+    <!-- UPLOAD PANEL (Expands from button) -->
+    <div class="upload-panel" id="uploadPanel">
+        <div class="upload-panel-header">
+            <h6><i class="fas fa-upload"></i> Analyze Another X-Ray</h6>
+            <button class="upload-panel-close" id="uploadPanelClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="upload-panel-body">
+            <form id="uploadFormCompact" action="/submit" method="post" enctype="multipart/form-data">
+                <div class="form-group mb-3">
+                    <label for="imgCompact" style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        Select X-Ray Image
+                    </label>
+                    <input type="file" name="my_image" id="imgCompact" required
+                           accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,image/tiff"
+                           class="form-control-file"
+                           style="font-size: 0.85rem;">
+                    <input type="hidden" name="options" value="RM">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-microscope"></i> Analyze X-Ray
+                </button>
+            </form>
         </div>
     </div>
 
@@ -1411,6 +1523,47 @@
                     document.getElementById('loadingStep3').innerHTML = '✓ Running predictions';
                     document.getElementById('loadingStep4').innerHTML = '⏳ Generating heatmap';
                 }, 3000);
+            });
+        }
+        
+        // Floating upload button toggle
+        const floatingUploadBtn = document.getElementById('floatingUploadBtn');
+        const uploadPanel = document.getElementById('uploadPanel');
+        const uploadPanelClose = document.getElementById('uploadPanelClose');
+        
+        if (floatingUploadBtn && uploadPanel) {
+            floatingUploadBtn.addEventListener('click', function() {
+                const isShowing = uploadPanel.classList.contains('show');
+                
+                if (isShowing) {
+                    uploadPanel.classList.remove('show');
+                    floatingUploadBtn.classList.remove('active');
+                    floatingUploadBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                } else {
+                    uploadPanel.classList.add('show');
+                    floatingUploadBtn.classList.add('active');
+                    floatingUploadBtn.innerHTML = '<i class="fas fa-times"></i>';
+                }
+            });
+            
+            if (uploadPanelClose) {
+                uploadPanelClose.addEventListener('click', function() {
+                    uploadPanel.classList.remove('show');
+                    floatingUploadBtn.classList.remove('active');
+                    floatingUploadBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                });
+            }
+            
+            // Close panel when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInside = uploadPanel.contains(event.target) || 
+                                     floatingUploadBtn.contains(event.target);
+                
+                if (!isClickInside && uploadPanel.classList.contains('show')) {
+                    uploadPanel.classList.remove('show');
+                    floatingUploadBtn.classList.remove('active');
+                    floatingUploadBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                }
             });
         }
         
