@@ -615,6 +615,148 @@
             background-color: var(--primary-color);
             color: white;
         }
+        
+        /* Centered Upload Layout */
+        .upload-container-centered {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-card-centered {
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        /* Compact Upload Widget (after analysis) */
+        .upload-widget-compact {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 300px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Results Layout */
+        .results-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Three Circles Layout */
+        .model-circles-container {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .model-circle-item {
+            text-align: center;
+            flex: 0 0 auto;
+        }
+        
+        .model-circle-item h6 {
+            margin-bottom: 1rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Image Comparison Container */
+        .image-comparison-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .image-wrapper {
+            position: relative;
+            flex: 0 0 auto;
+            max-width: 500px;
+        }
+        
+        .image-wrapper img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+        
+        .image-wrapper img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        .image-label {
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Legend Fixed Position */
+        .heatmap-legend-fixed {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--card-light);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+        
+        body.dark-mode .heatmap-legend-fixed {
+            background-color: var(--card-dark);
+        }
+        
+        /* Compact Summary Bar */
+        .summary-bar {
+            background-color: var(--card-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        body.dark-mode .summary-bar {
+            background-color: var(--card-dark);
+        }
+        
+        .summary-bar-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .summary-item-inline {
+            text-align: center;
+        }
+        
+        .summary-item-inline .label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .summary-item-inline .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -673,9 +815,226 @@
         {% endif %}
     {% endwith %}
 
-    <div class="container-fluid mt-4">
+    {% if not xray_prediction %}
+    <!-- CENTERED UPLOAD (Before Analysis) -->
+    <div class="upload-container-centered">
+        <div class="upload-card-centered">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4><i class="fas fa-upload"></i> Upload Chest X-Ray for AI Analysis</h4>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" action="/submit" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <div class="file-upload-wrapper">
+                                <input type="file" name="my_image" id="img" required
+                                       accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,image/tiff">
+                                <label class="file-upload-label" id="fileUploadLabel" for="img">
+                                    <div>
+                                        <div class="file-upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <div class="file-upload-text">Click to upload or drag & drop</div>
+                                        <div class="file-upload-hint">PNG, JPG, JPEG, GIF, BMP, TIFF (min 150x150px)</div>
+                                    </div>
+                                </label>
+                                <img id="imagePreview" class="image-preview" alt="Preview">
+                            </div>
+                            <input type="hidden" name="options" value="RM">
+                        </div>
+
+                        <div class="alert alert-info mt-3" style="font-size: 0.95rem;">
+                            <i class="fas fa-info-circle"></i> <strong>All 3 AI models will analyze your X-ray:</strong>
+                            Custom CNN, ResNet50, and VGG16, plus an Ensemble prediction.
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">
+                            <i class="fas fa-microscope"></i> Analyze with AI
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Educational Info Below Upload -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i> About Pneumonia Detection
+                </div>
+                <div class="card-body">
+                    <p><strong>What is Pneumonia?</strong></p>
+                    <p style="font-size: 0.9rem;">Pneumonia is an infection that inflames air sacs in the lungs, which may fill with fluid.</p>
+                    
+                    <p class="mt-3"><strong>X-Ray Indicators:</strong></p>
+                    <ul style="font-size: 0.9rem;">
+                        <li>White patches (infiltrates)</li>
+                        <li>Fluid accumulation</li>
+                        <li>Opacity in lung fields</li>
+                    </ul>
+                    
+                    <p class="mt-3"><strong>AI Confidence Score:</strong></p>
+                    <p style="font-size: 0.9rem;">
+                        Higher confidence (>70%) indicates stronger model certainty. 
+                        Lower scores suggest borderline cases requiring medical review.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- COMPACT UPLOAD WIDGET (After Analysis - Top Right) -->
+    <div class="upload-widget-compact">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-upload"></i> Analyze Another
+            </div>
+            <div class="card-body p-3">
+                <form id="uploadFormCompact" action="/submit" method="post" enctype="multipart/form-data">
+                    <div class="form-group mb-2">
+                        <input type="file" name="my_image" id="imgCompact" required
+                               accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,image/tiff"
+                               style="font-size: 0.85rem;">
+                        <input type="hidden" name="options" value="RM">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block btn-sm">
+                        <i class="fas fa-microscope"></i> Analyze
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULTS LAYOUT -->
+    <div class="results-container">
+        <!-- Compact Summary Bar -->
+        <div class="summary-bar">
+            <div class="summary-bar-content">
+                <div class="summary-item-inline">
+                    <div class="label">Diagnosis</div>
+                    <div class="value {% if xray_prediction == 'Normal' %}text-success{% else %}text-danger{% endif %}">
+                        {{ xray_prediction }}
+                    </div>
+                </div>
+                <div class="summary-item-inline">
+                    <div class="label">Ensemble Confidence</div>
+                    <div class="value">{{ "%.1f"|format(confidence) }}%</div>
+                </div>
+                {% if model_agreement %}
+                <div class="summary-item-inline">
+                    <div class="label">Model Agreement</div>
+                    <div class="value">{{ model_agreement.agreeing }}/{{ model_agreement.total }}</div>
+                </div>
+                {% endif %}
+                <div class="summary-item-inline">
+                    <div class="label">Recommendation</div>
+                    <div class="value" style="font-size: 1rem;">
+                        {% if xray_prediction == 'Pneumonia' %}
+                            <i class="fas fa-user-md text-danger"></i> Consult Doctor
+                        {% else %}
+                            <i class="fas fa-thumbs-up text-success"></i> Routine Follow-up
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agreement Indicator (if needed) -->
+        {% if model_agreement %}
+        <div class="text-center mb-4">
+            <div class="agreement-indicator agreement-{{ model_agreement.agreeing }}" style="display: inline-flex; max-width: 800px;">
+                {% if model_agreement.unanimous %}
+                    {% if confidence >= 75 %}
+                        <i class="fas fa-check-circle"></i>
+                        <span><strong>All {{ model_agreement.total }} models agree!</strong> High confidence diagnosis</span>
+                    {% elif confidence >= 60 %}
+                        <i class="fas fa-check-circle"></i>
+                        <span><strong>All {{ model_agreement.total }} models agree</strong> - Moderate confidence ({{ "%.1f"|format(confidence) }}%)</span>
+                    {% else %}
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><strong>All {{ model_agreement.total }} models agree</strong> but confidence is low ({{ "%.1f"|format(confidence) }}%) - Review recommended</span>
+                    {% endif %}
+                {% elif model_agreement.agreeing == 2 %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span><strong>{{ model_agreement.agreeing }}/{{ model_agreement.total }} models agree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Review recommended</span>
+                {% else %}
+                    <i class="fas fa-times-circle"></i>
+                    <span><strong>Models disagree</strong> ({{ model_agreement.pneumonia_votes }} Pneumonia, {{ model_agreement.normal_votes }} Normal) - Medical review required</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Three Model Circles -->
+        <div class="model-circles-container">
+            {% if all_predictions %}
+                {% for model_name, pred_data in all_predictions.items() %}
+                    {% if model_name != 'Ensemble' %}
+                    <div class="model-circle-item">
+                        <h6>{{ model_name }}</h6>
+                        <div class="circular-progress" data-percentage="{{ pred_data.confidence }}" data-result="{{ pred_data.result }}">
+                            <svg class="circular-progress-svg" width="140" height="140">
+                                <circle class="circular-progress-bg" cx="70" cy="70" r="60"></circle>
+                                <circle class="circular-progress-bar {{ 'success' if pred_data.result == 'Normal' else 'danger' }}" 
+                                        cx="70" cy="70" r="60"
+                                        style="stroke-dasharray: {{ pred_data.confidence * 3.77 }} 377;"></circle>
+                            </svg>
+                            <div class="circular-progress-text">
+                                <span class="percentage" style="font-size: 1.8rem;">{{ "%.0f"|format(pred_data.confidence) }}%</span>
+                                <span style="font-size: 0.75rem; display: block; margin-top: 0.25rem; font-weight: 600; color: {% if pred_data.result == 'Normal' %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                                    {{ pred_data.result }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if model_metrics and model_metrics[model_name] %}
+                        <div class="mt-2" style="font-size: 0.75rem; opacity: 0.7;">
+                            Acc: {{ model_metrics[model_name].accuracy }}% | Prec: {{ model_metrics[model_name].precision }}%
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Two Images Side by Side -->
+        <div class="image-comparison-container">
+            <div class="image-wrapper">
+                <img src="{{ xray_img_path }}" alt="Original X-Ray">
+                <div class="image-label">
+                    <i class="fas fa-x-ray"></i> Original X-Ray
+                </div>
+            </div>
+            {% if heatmap_path %}
+            <div class="image-wrapper">
+                <img src="{{ heatmap_path }}" alt="Grad-CAM Heatmap">
+                <div class="image-label">
+                    <i class="fas fa-fire"></i> Grad-CAM Analysis ({{ selected_model }})
+                    <div class="mt-2">
+                        <a href="{{ heatmap_path }}" download="pneumonia_heatmap_{{ selected_model.replace(' ', '_') }}.jpg" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Legend Fixed Bottom Left -->
+    <div class="heatmap-legend-fixed">
+        <small style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Heatmap Legend:</small>
+        <div style="font-size: 0.8rem;">
+            <div><span class="legend-color" style="background: #ff0000;"></span> High Attention</div>
+            <div class="mt-1"><span class="legend-color" style="background: #ffff00;"></span> Medium</div>
+            <div class="mt-1"><span class="legend-color" style="background: #0000ff;"></span> Low</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container-fluid mt-4" style="display: none;">
         <div class="row">
-            <!-- Left Column: Upload Form -->
+            <!-- OLD LAYOUT HIDDEN - KEEPING FOR REFERENCE -->
             <div class="col-lg-3">
                 <div class="card">
                     <div class="card-header">
@@ -1016,21 +1375,44 @@
         });
         
         // Form submission with loading indicator
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.classList.add('show');
-            
-            // Animate loading steps
-            setTimeout(() => {
-                document.getElementById('loadingStep2').innerHTML = '✓ Loading AI models';
-                document.getElementById('loadingStep3').innerHTML = '⏳ Running predictions';
-            }, 1000);
-            
-            setTimeout(() => {
-                document.getElementById('loadingStep3').innerHTML = '✓ Running predictions';
-                document.getElementById('loadingStep4').innerHTML = '⏳ Generating heatmap';
-            }, 3000);
-        });
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadFormCompact = document.getElementById('uploadFormCompact');
+        
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function(e) {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.classList.add('show');
+                
+                // Animate loading steps
+                setTimeout(() => {
+                    document.getElementById('loadingStep2').innerHTML = '✓ Loading AI models';
+                    document.getElementById('loadingStep3').innerHTML = '⏳ Running predictions';
+                }, 1000);
+                
+                setTimeout(() => {
+                    document.getElementById('loadingStep3').innerHTML = '✓ Running predictions';
+                    document.getElementById('loadingStep4').innerHTML = '⏳ Generating heatmap';
+                }, 3000);
+            });
+        }
+        
+        if (uploadFormCompact) {
+            uploadFormCompact.addEventListener('submit', function(e) {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.classList.add('show');
+                
+                // Animate loading steps
+                setTimeout(() => {
+                    document.getElementById('loadingStep2').innerHTML = '✓ Loading AI models';
+                    document.getElementById('loadingStep3').innerHTML = '⏳ Running predictions';
+                }, 1000);
+                
+                setTimeout(() => {
+                    document.getElementById('loadingStep3').innerHTML = '✓ Running predictions';
+                    document.getElementById('loadingStep4').innerHTML = '⏳ Generating heatmap';
+                }, 3000);
+            });
+        }
         
         // Initialize tooltips
         $(function () {
