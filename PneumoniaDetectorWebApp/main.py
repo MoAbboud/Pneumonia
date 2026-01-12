@@ -382,21 +382,33 @@ def performPrediction():
             if sample_image_url:
                 # Handle sample image from URL
                 logger.info(f"Using sample image: {sample_image_url}")
-                import requests
-                from io import BytesIO
                 
                 try:
-                    response = requests.get(sample_image_url, timeout=10)
-                    response.raise_for_status()
-                    
-                    # Save the downloaded image
-                    img = Image.open(BytesIO(response.content))
-                    xray_img_path = f"static/sample_{hash(sample_image_url)}.jpg"
-                    img.save(xray_img_path)
-                    logger.info(f"Sample image saved to: {xray_img_path}")
+                    # Check if it's a local static file path
+                    if sample_image_url.startswith('/static/'):
+                        # Remove leading slash and use the local file path
+                        xray_img_path = sample_image_url.lstrip('/')
+                        logger.info(f"Using local sample image: {xray_img_path}")
+                        
+                        # Verify the file exists
+                        if not os.path.exists(xray_img_path):
+                            raise FileNotFoundError(f"Sample image not found: {xray_img_path}")
+                    else:
+                        # Handle external URL (download it)
+                        import requests
+                        from io import BytesIO
+                        
+                        response = requests.get(sample_image_url, timeout=10)
+                        response.raise_for_status()
+                        
+                        # Save the downloaded image
+                        img = Image.open(BytesIO(response.content))
+                        xray_img_path = f"static/sample_{hash(sample_image_url)}.jpg"
+                        img.save(xray_img_path)
+                        logger.info(f"Sample image saved to: {xray_img_path}")
                     
                 except Exception as e:
-                    logger.error(f"Failed to download sample image: {str(e)}")
+                    logger.error(f"Failed to load sample image: {str(e)}")
                     flash('Failed to load sample image. Please try uploading your own image.', 'error')
                     return render_template("Home.html")
             else:
