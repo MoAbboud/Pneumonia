@@ -376,31 +376,56 @@ def performPrediction():
         logger.info("Received prediction request")
         
         if request.method == 'POST':
-            # Check if file was uploaded
-            if 'my_image' not in request.files:
-                logger.warning("No file in request")
-                flash('No file uploaded', 'error')
-                return render_template("Home.html")
+            # Check if a sample image URL was provided
+            sample_image_url = request.form.get('sample_image', '')
             
-            xray_img = request.files['my_image']
-            logger.info(f"File received: {xray_img.filename}")
-            
-            # Check if filename is empty
-            if xray_img.filename == "":
-                logger.warning("Empty filename")
-                flash('No file selected', 'error')
-                return render_template("Home.html")
-            
-            # Validate file type
-            if not allowed_file(xray_img.filename):
-                logger.warning(f"Invalid file type: {xray_img.filename}")
-                flash('Invalid file type. Please upload an image file (PNG, JPG, JPEG, GIF, BMP, TIFF)', 'error')
-                return render_template("Home.html")
-            
-            # Save the uploaded file
-            xray_img_path = "static/" + xray_img.filename
-            logger.info(f"Saving file to: {xray_img_path}")
-            xray_img.save(xray_img_path)
+            if sample_image_url:
+                # Handle sample image from URL
+                logger.info(f"Using sample image: {sample_image_url}")
+                import requests
+                from io import BytesIO
+                
+                try:
+                    response = requests.get(sample_image_url, timeout=10)
+                    response.raise_for_status()
+                    
+                    # Save the downloaded image
+                    img = Image.open(BytesIO(response.content))
+                    xray_img_path = f"static/sample_{hash(sample_image_url)}.jpg"
+                    img.save(xray_img_path)
+                    logger.info(f"Sample image saved to: {xray_img_path}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to download sample image: {str(e)}")
+                    flash('Failed to load sample image. Please try uploading your own image.', 'error')
+                    return render_template("Home.html")
+            else:
+                # Handle uploaded file
+                # Check if file was uploaded
+                if 'my_image' not in request.files:
+                    logger.warning("No file in request")
+                    flash('No file uploaded', 'error')
+                    return render_template("Home.html")
+                
+                xray_img = request.files['my_image']
+                logger.info(f"File received: {xray_img.filename}")
+                
+                # Check if filename is empty
+                if xray_img.filename == "":
+                    logger.warning("Empty filename")
+                    flash('No file selected', 'error')
+                    return render_template("Home.html")
+                
+                # Validate file type
+                if not allowed_file(xray_img.filename):
+                    logger.warning(f"Invalid file type: {xray_img.filename}")
+                    flash('Invalid file type. Please upload an image file (PNG, JPG, JPEG, GIF, BMP, TIFF)', 'error')
+                    return render_template("Home.html")
+                
+                # Save the uploaded file
+                xray_img_path = "static/" + xray_img.filename
+                logger.info(f"Saving file to: {xray_img_path}")
+                xray_img.save(xray_img_path)
             
             # Validate image quality
             is_valid, validation_message = validate_image_quality(xray_img_path)

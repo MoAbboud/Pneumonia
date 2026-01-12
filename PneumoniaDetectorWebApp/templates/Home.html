@@ -884,6 +884,106 @@
             font-size: 1.3rem;
             font-weight: 700;
         }
+        
+        /* Sample Image Sliders */
+        .sample-slider {
+            position: fixed;
+            width: 150px;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 50;
+        }
+        
+        .sample-slider-left {
+            left: 20px;
+        }
+        
+        .sample-slider-right {
+            right: 20px;
+        }
+        
+        .slider-track {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        
+        .slider-track-up {
+            animation-name: slideUp;
+            animation-duration: 30s;
+        }
+        
+        .slider-track-down {
+            animation-name: slideDown;
+            animation-duration: 30s;
+        }
+        
+        @keyframes slideUp {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        
+        @keyframes slideDown {
+            0% { transform: translateY(-50%); }
+            100% { transform: translateY(0); }
+        }
+        
+        .sample-image {
+            width: 130px;
+            height: 130px;
+            border-radius: 12px;
+            border: 3px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode .sample-image {
+            border-color: var(--border-dark);
+        }
+        
+        .sample-image:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+        
+        .sample-image-label {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 0.65rem;
+            padding: 3px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        /* Selected sample indicator */
+        .selected-sample-indicator {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(37, 99, 235, 0.1);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .selected-sample-indicator.show {
+            display: block;
+        }
+        
+        @media (max-width: 992px) {
+            .sample-slider {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -944,18 +1044,43 @@
 
     {% if not xray_prediction %}
     <!-- CENTERED UPLOAD (Before Analysis) -->
+    
+    <!-- Left Slider - Moving Up -->
+    <div class="sample-slider sample-slider-left">
+        <div class="slider-track slider-track-up" id="sliderLeft">
+            <!-- Images will be duplicated by JavaScript for seamless loop -->
+        </div>
+    </div>
+    
+    <!-- Right Slider - Moving Down -->
+    <div class="sample-slider sample-slider-right">
+        <div class="slider-track slider-track-down" id="sliderRight">
+            <!-- Images will be duplicated by JavaScript for seamless loop -->
+        </div>
+    </div>
+    
     <div class="upload-container-centered">
         <div class="upload-card-centered">
             <div class="card">
                 <div class="card-header text-center">
                     <h4><i class="fas fa-upload"></i> Upload Chest X-Ray for AI Analysis</h4>
+                    <p style="font-size: 0.85rem; margin: 0.5rem 0 0 0; opacity: 0.8;">Or click a sample image from the sides →</p>
                 </div>
                 <div class="card-body">
+                    <!-- Selected Sample Indicator -->
+                    <div class="selected-sample-indicator" id="selectedSampleIndicator">
+                        <i class="fas fa-check-circle"></i> Sample selected: <strong id="selectedSampleName"></strong>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ml-2" id="clearSampleBtn" style="float: right;">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                    
                     <form id="uploadForm" action="/submit" method="post" enctype="multipart/form-data">
                         <div class="form-group">
                             <div class="file-upload-wrapper">
-                                <input type="file" name="my_image" id="img" required
+                                <input type="file" name="my_image" id="img"
                                        accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,image/tiff">
+                                <input type="hidden" name="sample_image" id="sampleImageInput">
                                 <label class="file-upload-label" id="fileUploadLabel" for="img">
                                     <div>
                                         <div class="file-upload-icon">
@@ -975,7 +1100,7 @@
                             Custom CNN, ResNet50, and VGG16, plus an Ensemble prediction.
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">
+                        <button type="submit" class="btn btn-primary btn-block btn-lg mt-4" id="analyzeBtn">
                             <i class="fas fa-microscope"></i> Analyze with AI
                         </button>
                     </form>
@@ -1492,6 +1617,122 @@
                 localStorage.setItem('theme', 'light');
             }
         });
+        
+        // Sample X-ray images for demonstration
+        // Using placeholder images - replace with actual X-ray sample URLs
+        const sampleImages = [
+            { url: 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Normal+X-Ray+1', name: 'Normal Case 1', type: 'normal' },
+            { url: 'https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Pneumonia+X-Ray+1', name: 'Pneumonia Case 1', type: 'pneumonia' },
+            { url: 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Normal+X-Ray+2', name: 'Normal Case 2', type: 'normal' },
+            { url: 'https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Pneumonia+X-Ray+2', name: 'Pneumonia Case 2', type: 'pneumonia' },
+            { url: 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Normal+X-Ray+3', name: 'Normal Case 3', type: 'normal' },
+            { url: 'https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Pneumonia+X-Ray+3', name: 'Pneumonia Case 3', type: 'pneumonia' },
+        ];
+        
+        // Initialize sample image sliders
+        function initializeSampleSliders() {
+            const sliderLeft = document.getElementById('sliderLeft');
+            const sliderRight = document.getElementById('sliderRight');
+            
+            if (!sliderLeft || !sliderRight) return;
+            
+            // Create images for left slider (first half)
+            const leftImages = sampleImages.slice(0, 3);
+            // Create images for right slider (second half)
+            const rightImages = sampleImages.slice(3);
+            
+            // Duplicate images for seamless loop
+            const createSliderContent = (images) => {
+                return [...images, ...images].map((img, index) => `
+                    <div style="position: relative; cursor: pointer;" class="sample-item" data-url="${img.url}" data-name="${img.name}">
+                        <img src="${img.url}" alt="${img.name}" class="sample-image" 
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27130%27 height=%27130%27%3E%3Crect fill=%27%23ddd%27 width=%27130%27 height=%27130%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-family=%27Arial%27 font-size=%2712%27%3EX-Ray Sample%3C/text%3E%3C/svg%3E'">
+                        <div class="sample-image-label">${img.name}</div>
+                    </div>
+                `).join('');
+            };
+            
+            sliderLeft.innerHTML = createSliderContent(leftImages);
+            sliderRight.innerHTML = createSliderContent(rightImages);
+            
+            // Add click handlers
+            document.querySelectorAll('.sample-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    selectSampleImage(this.dataset.url, this.dataset.name);
+                });
+            });
+        }
+        
+        // Select a sample image
+        function selectSampleImage(url, name) {
+            const preview = document.getElementById('imagePreview');
+            const label = document.getElementById('fileUploadLabel');
+            const sampleInput = document.getElementById('sampleImageInput');
+            const indicator = document.getElementById('selectedSampleIndicator');
+            const sampleNameSpan = document.getElementById('selectedSampleName');
+            const fileInput = document.getElementById('img');
+            
+            // Clear file input
+            fileInput.value = '';
+            fileInput.removeAttribute('required');
+            
+            // Set sample image
+            sampleInput.value = url;
+            preview.src = url;
+            preview.classList.add('show');
+            
+            // Update label
+            label.classList.add('has-file');
+            label.innerHTML = `
+                <div>
+                    <div class="file-upload-icon" style="color: var(--success-color);">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="file-upload-text">Sample: ${name}</div>
+                    <div class="file-upload-hint">Click "Analyze" to test the AI models</div>
+                </div>
+            `;
+            
+            // Show indicator
+            sampleNameSpan.textContent = name;
+            indicator.classList.add('show');
+        }
+        
+        // Clear sample selection
+        const clearSampleBtn = document.getElementById('clearSampleBtn');
+        if (clearSampleBtn) {
+            clearSampleBtn.addEventListener('click', function() {
+                const preview = document.getElementById('imagePreview');
+                const label = document.getElementById('fileUploadLabel');
+                const sampleInput = document.getElementById('sampleImageInput');
+                const indicator = document.getElementById('selectedSampleIndicator');
+                const fileInput = document.getElementById('img');
+                
+                // Reset everything
+                sampleInput.value = '';
+                preview.classList.remove('show');
+                preview.src = '';
+                fileInput.setAttribute('required', 'required');
+                indicator.classList.remove('show');
+                
+                // Reset label
+                label.classList.remove('has-file');
+                label.innerHTML = `
+                    <div>
+                        <div class="file-upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="file-upload-text">Click to upload or drag & drop</div>
+                        <div class="file-upload-hint">PNG, JPG, JPEG, GIF, BMP, TIFF (min 150x150px)</div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Initialize sliders on page load
+        if (document.getElementById('sliderLeft')) {
+            initializeSampleSliders();
+        }
         
         // File input label update
         
