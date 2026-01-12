@@ -1663,30 +1663,30 @@
             }
         });
         
-        // Sample X-ray images from the x-rays folder
+        // Sample X-ray images from the static/x-rays folder
         const sampleImages = [
             // Normal cases (IM- prefix)
-            { url: '/static/../x-rays/IM-0001-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0003-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0005-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0006-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0007-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0009-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0010-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0011-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0013-0001.jpeg', name: 'Normal', type: 'normal' },
-            { url: '/static/../x-rays/IM-0015-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0001-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0003-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0005-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0006-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0007-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0009-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0010-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0011-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0013-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/x-rays/IM-0015-0001.jpeg', name: 'Normal', type: 'normal' },
             // Pneumonia cases (person/virus prefix)
-            { url: '/static/../x-rays/person1_virus_12.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person1_virus_6.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person47_virus_99.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person48_virus_100.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person49_virus_101.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person50_virus_102.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person52_virus_106.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person53_virus_107.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person54_virus_109.jpeg', name: 'Pneumonia', type: 'pneumonia' },
-            { url: '/static/../x-rays/person59_virus_116.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person1_virus_12.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person1_virus_6.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person47_virus_99.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person48_virus_100.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person49_virus_101.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person50_virus_102.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person52_virus_106.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person53_virus_107.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person54_virus_109.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/x-rays/person59_virus_116.jpeg', name: 'Pneumonia', type: 'pneumonia' },
         ];
         
         // Initialize sample image sliders with seamless infinite scroll
@@ -1740,10 +1740,9 @@
             fileInput.value = '';
             fileInput.removeAttribute('required');
             
-            // Set sample image (use full path)
-            const fullPath = url.replace('/static/../', '/');
-            sampleInput.value = fullPath;
-            preview.src = fullPath;
+            // Set sample image URL
+            sampleInput.value = url;
+            preview.src = url;
             preview.classList.add('show');
             
             // Update label with appropriate icon
