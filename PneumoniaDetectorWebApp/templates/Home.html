@@ -885,22 +885,37 @@
             font-weight: 700;
         }
         
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .slider-column {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
         /* Sample Image Sliders */
         .sample-slider {
-            position: fixed;
-            width: 180px;
-            height: 100vh;
+            width: 100%;
+            max-width: 280px;
+            height: calc(100vh - 120px);
             overflow: hidden;
-            z-index: 50;
-            top: 0;
-        }
-        
-        .sample-slider-left {
-            left: 0;
-        }
-        
-        .sample-slider-right {
-            right: 0;
+            position: relative;
         }
         
         .slider-track {
@@ -935,8 +950,8 @@
         }
         
         .sample-image {
-            width: 140px;
-            height: 140px;
+            width: 200px;
+            height: 200px;
             border-radius: 12px;
             border: 3px solid var(--border-light);
             cursor: pointer;
@@ -945,6 +960,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             display: block;
             background: #000;
+            margin: 0 auto;
         }
         
         body.dark-mode .sample-image {
@@ -996,24 +1012,49 @@
             display: block;
         }
         
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .slider-column {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 2rem;
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 1400px) {
-            .sample-slider {
-                width: 140px;
+            .dashboard-grid {
+                grid-template-columns: 1fr 2.5fr 1fr;
             }
             .sample-image {
-                width: 110px;
-                height: 110px;
+                width: 160px;
+                height: 160px;
             }
         }
         
         @media (max-width: 1200px) {
-            .sample-slider {
-                width: 120px;
+            .dashboard-grid {
+                grid-template-columns: 1fr 3fr 1fr;
             }
             .sample-image {
-                width: 90px;
-                height: 90px;
+                width: 140px;
+                height: 140px;
             }
             .sample-image-label {
                 font-size: 0.6rem;
@@ -1022,11 +1063,14 @@
         }
         
         @media (max-width: 992px) {
-            .sample-slider {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .slider-column {
                 display: none;
             }
-            .upload-card-centered {
-                max-width: 90%;
+            .center-column {
+                padding-top: 1rem;
             }
         }
     </style>
@@ -1090,19 +1134,19 @@
     {% if not xray_prediction %}
     <!-- CENTERED UPLOAD (Before Analysis) -->
     
-    <!-- Left Slider - Moving Up -->
-    <div class="sample-slider sample-slider-left">
-        <div class="slider-track slider-track-up" id="sliderLeft">
-            <!-- Images will be duplicated by JavaScript for seamless loop -->
+    <!-- 3-Column Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Left Slider Column -->
+        <div class="slider-column">
+            <div class="sample-slider">
+                <div class="slider-track slider-track-up" id="sliderLeft">
+                    <!-- Images will be duplicated by JavaScript for seamless loop -->
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <!-- Right Slider - Moving Down -->
-    <div class="sample-slider sample-slider-right">
-        <div class="slider-track slider-track-down" id="sliderRight">
-            <!-- Images will be duplicated by JavaScript for seamless loop -->
-        </div>
-    </div>
+        
+        <!-- Center Upload Column -->
+        <div class="center-column">
     
     <div class="upload-container-centered">
         <div class="upload-card-centered">
@@ -1177,6 +1221,20 @@
             </div>
         </div>
     </div>
+    
+        </div>
+        <!-- End Center Column -->
+        
+        <!-- Right Slider Column -->
+        <div class="slider-column">
+            <div class="sample-slider">
+                <div class="slider-track slider-track-down" id="sliderRight">
+                    <!-- Images will be duplicated by JavaScript for seamless loop -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Dashboard Grid -->
     
     {% else %}
     <!-- FLOATING UPLOAD BUTTON (Bottom Right) -->
