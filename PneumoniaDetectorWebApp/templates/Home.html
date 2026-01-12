@@ -888,80 +888,97 @@
         /* Sample Image Sliders */
         .sample-slider {
             position: fixed;
-            width: 150px;
+            width: 180px;
             height: 100vh;
             overflow: hidden;
             z-index: 50;
+            top: 0;
         }
         
         .sample-slider-left {
-            left: 20px;
+            left: 0;
         }
         
         .sample-slider-right {
-            right: 20px;
+            right: 0;
         }
         
         .slider-track {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
+            padding: 20px 0;
         }
         
         .slider-track-up {
-            animation-name: slideUp;
-            animation-duration: 30s;
+            animation: slideUp 40s linear infinite;
         }
         
         .slider-track-down {
-            animation-name: slideDown;
-            animation-duration: 30s;
+            animation: slideDown 40s linear infinite;
         }
         
         @keyframes slideUp {
             0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
+            100% { transform: translateY(calc(-50%)); }
         }
         
         @keyframes slideDown {
-            0% { transform: translateY(-50%); }
+            0% { transform: translateY(calc(-50%)); }
             100% { transform: translateY(0); }
         }
         
+        .sample-image-wrapper {
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
         .sample-image {
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             border-radius: 12px;
             border: 3px solid var(--border-light);
             cursor: pointer;
             transition: all 0.3s ease;
             object-fit: cover;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: block;
+            background: #000;
         }
         
         body.dark-mode .sample-image {
             border-color: var(--border-dark);
         }
         
-        .sample-image:hover {
-            transform: scale(1.1);
+        .sample-image-wrapper:hover .sample-image {
+            transform: scale(1.15);
             border-color: var(--primary-color);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5);
+            z-index: 10;
         }
         
         .sample-image-label {
             position: absolute;
-            bottom: 5px;
-            left: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.7);
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
             color: white;
-            font-size: 0.65rem;
-            padding: 3px;
+            font-size: 0.7rem;
+            padding: 4px 6px;
             border-radius: 4px;
             text-align: center;
+            font-weight: 600;
+            pointer-events: none;
+        }
+        
+        .sample-image-label.normal {
+            background: rgba(16, 185, 129, 0.9);
+        }
+        
+        .sample-image-label.pneumonia {
+            background: rgba(239, 68, 68, 0.9);
         }
         
         /* Selected sample indicator */
@@ -979,9 +996,37 @@
             display: block;
         }
         
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .sample-slider {
+                width: 140px;
+            }
+            .sample-image {
+                width: 110px;
+                height: 110px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .sample-slider {
+                width: 120px;
+            }
+            .sample-image {
+                width: 90px;
+                height: 90px;
+            }
+            .sample-image-label {
+                font-size: 0.6rem;
+                padding: 3px 4px;
+            }
+        }
+        
         @media (max-width: 992px) {
             .sample-slider {
                 display: none;
+            }
+            .upload-card-centered {
+                max-width: 90%;
             }
         }
     </style>
@@ -1618,53 +1663,72 @@
             }
         });
         
-        // Sample X-ray images for demonstration
-        // Using placeholder images - replace with actual X-ray sample URLs
+        // Sample X-ray images from the x-rays folder
         const sampleImages = [
-            { url: 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Normal+X-Ray+1', name: 'Normal Case 1', type: 'normal' },
-            { url: 'https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Pneumonia+X-Ray+1', name: 'Pneumonia Case 1', type: 'pneumonia' },
-            { url: 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Normal+X-Ray+2', name: 'Normal Case 2', type: 'normal' },
-            { url: 'https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Pneumonia+X-Ray+2', name: 'Pneumonia Case 2', type: 'pneumonia' },
-            { url: 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Normal+X-Ray+3', name: 'Normal Case 3', type: 'normal' },
-            { url: 'https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Pneumonia+X-Ray+3', name: 'Pneumonia Case 3', type: 'pneumonia' },
+            // Normal cases (IM- prefix)
+            { url: '/static/../x-rays/IM-0001-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0003-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0005-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0006-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0007-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0009-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0010-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0011-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0013-0001.jpeg', name: 'Normal', type: 'normal' },
+            { url: '/static/../x-rays/IM-0015-0001.jpeg', name: 'Normal', type: 'normal' },
+            // Pneumonia cases (person/virus prefix)
+            { url: '/static/../x-rays/person1_virus_12.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person1_virus_6.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person47_virus_99.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person48_virus_100.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person49_virus_101.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person50_virus_102.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person52_virus_106.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person53_virus_107.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person54_virus_109.jpeg', name: 'Pneumonia', type: 'pneumonia' },
+            { url: '/static/../x-rays/person59_virus_116.jpeg', name: 'Pneumonia', type: 'pneumonia' },
         ];
         
-        // Initialize sample image sliders
+        // Initialize sample image sliders with seamless infinite scroll
         function initializeSampleSliders() {
             const sliderLeft = document.getElementById('sliderLeft');
             const sliderRight = document.getElementById('sliderRight');
             
             if (!sliderLeft || !sliderRight) return;
             
-            // Create images for left slider (first half)
-            const leftImages = sampleImages.slice(0, 3);
-            // Create images for right slider (second half)
-            const rightImages = sampleImages.slice(3);
+            // Shuffle and split images
+            const shuffled = [...sampleImages].sort(() => Math.random() - 0.5);
+            const midpoint = Math.ceil(shuffled.length / 2);
+            const leftImages = shuffled.slice(0, midpoint);
+            const rightImages = shuffled.slice(midpoint);
             
-            // Duplicate images for seamless loop
-            const createSliderContent = (images) => {
-                return [...images, ...images].map((img, index) => `
-                    <div style="position: relative; cursor: pointer;" class="sample-item" data-url="${img.url}" data-name="${img.name}">
-                        <img src="${img.url}" alt="${img.name}" class="sample-image" 
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27130%27 height=%27130%27%3E%3Crect fill=%27%23ddd%27 width=%27130%27 height=%27130%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27 font-family=%27Arial%27 font-size=%2712%27%3EX-Ray Sample%3C/text%3E%3C/svg%3E'">
-                        <div class="sample-image-label">${img.name}</div>
-                    </div>
-                `).join('');
-            };
+            // Create image HTML
+            const createImageHTML = (img) => `
+                <div class="sample-image-wrapper" data-url="${img.url}" data-name="${img.name}" data-type="${img.type}">
+                    <img src="${img.url}" alt="${img.name}" class="sample-image" 
+                         onerror="this.style.display='none'">
+                    <div class="sample-image-label ${img.type}">${img.name}</div>
+                </div>
+            `;
             
-            sliderLeft.innerHTML = createSliderContent(leftImages);
-            sliderRight.innerHTML = createSliderContent(rightImages);
+            // Duplicate content for seamless loop (3x for smoother effect)
+            const leftContent = [...leftImages, ...leftImages, ...leftImages].map(createImageHTML).join('');
+            const rightContent = [...rightImages, ...rightImages, ...rightImages].map(createImageHTML).join('');
             
-            // Add click handlers
-            document.querySelectorAll('.sample-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    selectSampleImage(this.dataset.url, this.dataset.name);
+            sliderLeft.innerHTML = leftContent;
+            sliderRight.innerHTML = rightContent;
+            
+            // Add click handlers to all sample images
+            document.querySelectorAll('.sample-image-wrapper').forEach(wrapper => {
+                wrapper.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    selectSampleImage(this.dataset.url, this.dataset.name, this.dataset.type);
                 });
             });
         }
         
         // Select a sample image
-        function selectSampleImage(url, name) {
+        function selectSampleImage(url, name, type) {
             const preview = document.getElementById('imagePreview');
             const label = document.getElementById('fileUploadLabel');
             const sampleInput = document.getElementById('sampleImageInput');
@@ -1676,25 +1740,29 @@
             fileInput.value = '';
             fileInput.removeAttribute('required');
             
-            // Set sample image
-            sampleInput.value = url;
-            preview.src = url;
+            // Set sample image (use full path)
+            const fullPath = url.replace('/static/../', '/');
+            sampleInput.value = fullPath;
+            preview.src = fullPath;
             preview.classList.add('show');
             
-            // Update label
+            // Update label with appropriate icon
+            const icon = type === 'normal' ? '✓' : '⚠';
+            const color = type === 'normal' ? 'var(--success-color)' : 'var(--danger-color)';
             label.classList.add('has-file');
             label.innerHTML = `
                 <div>
-                    <div class="file-upload-icon" style="color: var(--success-color);">
+                    <div class="file-upload-icon" style="color: ${color};">
                         <i class="fas fa-images"></i>
                     </div>
-                    <div class="file-upload-text">Sample: ${name}</div>
-                    <div class="file-upload-hint">Click "Analyze" to test the AI models</div>
+                    <div class="file-upload-text">Sample: ${name} X-Ray</div>
+                    <div class="file-upload-hint">Click "Analyze" to test AI detection</div>
                 </div>
             `;
             
             // Show indicator
-            sampleNameSpan.textContent = name;
+            sampleNameSpan.textContent = `${name} X-Ray`;
+            sampleNameSpan.style.color = color;
             indicator.classList.add('show');
         }
         
