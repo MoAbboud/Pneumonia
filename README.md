@@ -24,5 +24,44 @@ To run this project, download the PneumoniaDetectorWebApp folder that contains t
 Python. Run the main.py folder and use http://127.0.0.1:5000/ in a new tab in the browser to display the user interface. The test Chest X-rays can be found
 in the x-rays folder. 
 
+## New Features
+
+### 🤖 Multi-Model AI Analysis
+- **Three AI Models**: Added ResNet50 and VGG16 alongside the original Custom CNN
+- **Ensemble Prediction**: Weighted ensemble combining all three models for improved accuracy
+- **Model Performance Metrics**: Displays accuracy, precision, recall, and F1-score for each model
+- **Side-by-Side Comparison**: View predictions from all models simultaneously
+
+### 📊 Enhanced Results Dashboard
+- **Confidence Gauges**: Circular progress indicators showing each model's confidence level
+- **Model Agreement Indicators**: Shows consensus between models (e.g., "All 3 models agree")
+- **Color-Coded Results**: Green for Normal, red for Pneumonia
+- **Detailed Metrics**: Performance statistics for each model displayed with predictions
+
+### 🎨 Modern User Interface
+- **Dark/Light Mode Toggle**: Switch between themes with persistent preference storage
+- **Animated Sample Image Sliders**: Infinite scrolling galleries displaying 20+ sample X-rays
+- **Drag & Drop Upload**: Modern file upload interface with instant image preview
+- **Responsive Design**: Optimized for both desktop and mobile devices
+- **Loading Animations**: Professional loading overlay during AI analysis
+
+### 🖼️ Interactive Sample Images
+- **Click-to-Load**: Click any sample X-ray image to instantly load it for analysis
+- **20+ Pre-loaded Samples**: Mix of Normal (10) and Pneumonia (10) cases
+- **Visual Labels**: Each sample clearly labeled as Normal or Pneumonia
+- **Dual Sliders**: Sample images displayed on both left and right sides of the upload area
+
+### ✅ Smart Image Validation
+- **Resolution Check**: Validates minimum image size (150x150 pixels)
+- **Quality Assessment**: Detects corrupted, blank, or low-quality images
+- **Multiple Format Support**: PNG, JPG, JPEG, GIF, BMP, TIFF
+- **File Size Validation**: Ensures images aren't corrupted based on file size
+
+### 🎯 Improved User Experience
+- **Medical Disclaimer Banner**: Prominent warning that tool is for educational purposes only
+- **Flash Message System**: Clear feedback for errors and successful operations
+- **Selected Sample Indicator**: Shows which sample image is currently selected with option to clear
+- **File Upload Hints**: Helpful text guiding users on supported formats and sizes 
+
 
 
